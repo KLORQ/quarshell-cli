@@ -1,0 +1,120 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Tagged releases via GoReleaser. Semver pre-release suffixes → GitHub prerelease
+# (prerelease: auto) — same pattern as HashiCorp / many Go corporate CLIs.
+name: Release
+
+env:
+  CGO_ENABLED: "0"
+  GOWORK: "off"
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to rebuild (e.g. v0.1.8)"
+        required: true
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    name: GoReleaser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+          fetch-depth: 0
+
+      - name: Check out requested tag for manual rebuild
+        if: github.event_name == 'workflow_dispatch' && inputs.tag != ''
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: git -C quarshell-cli checkout --detach "$RELEASE_TAG"
+
+      # The CLI and Gateway builds consume the same published module versions
+      # that release:published verifies. These source checkouts are needed only
+      # for GoReleaser's companion Gateway binary, profile catalog and helpers.
+      - name: Checkout quarshell-gateway source
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-gateway
+          ref: v0.1.9
+          path: quarshell-gateway
+
+      - name: Checkout quarshell-runtime helper source
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-policy profile catalog
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-cli/go.sum
+            quarshell-gateway/go.sum
+            quarshell-runtime/go.sum
+            quarshell-core/go.sum
+            quarshell-gateway/go.sum
+            quarshell-policy/go.sum
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2.18.3
+          workdir: quarshell-cli
+          args: release --clean --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOTOOLCHAIN: local
+
+      - name: Install Syft
+        id: syft
+        uses: anchore/sbom-action/download-syft@v0.24.0
+        with:
+          syft-version: v1.42.3
+
+      - name: Generate SPDX SBOMs for release archives
+        working-directory: quarshell-cli
+        env:
+          SYFT_BIN: ${{ steps.syft.outputs.cmd }}
+        run: bash scripts/generate-release-sboms.sh "$SYFT_BIN" dist
+
+      - name: Upload SPDX SBOMs to the release
+        working-directory: quarshell-cli
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag != '' && inputs.tag || github.ref_name }}
+        run: gh release upload "$RELEASE_TAG" dist/*.spdx.json --clobber
+
+      - name: Attest release archives
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            quarshell-cli/dist/*.tar.gz
+            quarshell-cli/dist/*.zip
+
+      - name: Attest published SBOM documents
+        uses: actions/attest@v4
+        with:
+          subject-path: quarshell-cli/dist/*.spdx.json
