@@ -709,7 +709,7 @@ jobs:
 
           mkdir -p /tmp/rel && ln -s "$PWD/dist" /tmp/rel/snapshot
           CAUTEM_RELEASE_URL=file:///tmp/rel CAUTEM_VERSION=snapshot \
-            CAUTEM_INSTALL_DIR=/tmp/prefix/bin sh ./install.sh
+            CAUTEM_NO_START=1 CAUTEM_INSTALL_DIR=/tmp/prefix/bin sh ./install.sh
           test -x /tmp/prefix/bin/cautem
           test -x /tmp/prefix/bin/quarshell-gateway
           test -f /tmp/prefix/bin/providers/claude-code.yaml

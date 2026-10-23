@@ -6,13 +6,13 @@
 </p>
 <p align="center">
   <a href="https://github.com/KLORQ/quarshell-cli/actions/workflows/ci.yml"><img src="https://github.com/KLORQ/quarshell-cli/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/KLORQ/quarshell/releases"><img src="https://img.shields.io/github/v/release/KLORQ/quarshell?include_prereleases&sort=semver&label=release" alt="release"></a>
-  <a href="https://img.shields.io/badge/status-v0.2.1-blue"><img src="https://img.shields.io/badge/status-v0.2.1-blue" alt="v0.2.1"></a>
+  <a href="https://github.com/KLORQ/quarshell-cli/releases"><img src="https://img.shields.io/github/v/release/KLORQ/quarshell-cli?include_prereleases&sort=semver&label=release" alt="release"></a>
+  <a href="https://img.shields.io/badge/API-pre--stable%200.x-orange"><img src="https://img.shields.io/badge/API-pre--stable%200.x-orange" alt="pre-stable API"></a>
   <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="License"></a>
   <a href="https://github.com/KLORQ/quarshell-cli"><img src="https://img.shields.io/badge/Go-1.27+-00ADD8?logo=go" alt="Go Version"></a>
 </p>
 <p align="center">
-  <sub>Part of the <a href="https://github.com/KLORQ">cautem / cautem</a> ecosystem</sub>
+  <sub>Part of the <a href="https://github.com/KLORQ">Quarshell</a> ecosystem</sub>
 </p>
 
 ---
@@ -21,7 +21,7 @@
 
 The [quick start](https://klorq.github.io/sandbox.dev/get-started/) contains the supported installation and first-sandbox flow.
 
-**quarshell-cli** is the user-facing `cautem` binary for the cautem ecosystem: sandbox lifecycle, policy checks, provider attach, gateway selection, live logs, and agent images.
+**quarshell-cli** is the user-facing `cautem` binary for Quarshell: sandbox lifecycle, policy checks, provider attach, gateway selection, live logs, and agent images.
 
 ### Key Features
 
@@ -38,25 +38,27 @@ The [quick start](https://klorq.github.io/sandbox.dev/get-started/) contains the
 
 ## Installation
 
-Install the latest release into `~/.local/bin` and start a local gateway:
+Install the latest CLI release into `~/.local/bin`; Linux and macOS archives include the Gateway and runtime helpers, while the current Windows archive includes the CLI:
 
 ```bash
-curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell/master/install.sh | sh
+curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell-cli/main/install.sh | sh
 ```
 
 Pin a release with `CAUTEM_VERSION=vX.Y.Z`, or skip gateway startup with `CAUTEM_NO_START=1`.
 
-From source in the [monorepo](https://github.com/KLORQ/quarshell):
+From source in the [Quarshell workspace](https://github.com/KLORQ/quarshell-workspace):
 
 ```bash
-go build -C quarshell-cli -o ../cautem ./cmd/cautem
-go build -C quarshell-gateway -o ../quarshell-gateway ./cmd/quarshell-gateway
-./cautem install
+git clone https://github.com/KLORQ/quarshell-workspace.git
+cd quarshell-workspace
+tools/checkout-modules.sh
+task workspace:sync
+go build -C quarshell-cli -o cautem ./cmd/cautem
 ```
 
 **Requirements:** Docker or Podman. Go 1.27+ only if building from source.
 
-`v0.2.1` is the current stable numbered release. It builds from published module dependencies; OpenShell behavioral compatibility remains partial. See [development and releases](https://klorq.github.io/sandbox.dev/reference/development/) and the [compatibility status](https://klorq.github.io/sandbox.dev/reference/openshell-compatibility/).
+Quarshell APIs are pre-stable and remain in the `0.x` series. OpenShell behavioral compatibility is still partial. See [development and releases](https://klorq.github.io/sandbox.dev/reference/development/) and the [compatibility status](https://klorq.github.io/sandbox.dev/reference/openshell-compatibility/).
 
 ---
 
