@@ -5,19 +5,18 @@ go 1.27.0
 toolchain go1.27.3
 
 require (
-	github.com/KLORQ/quarshell-core v0.5.0
-	github.com/KLORQ/quarshell-driver v0.2.0
-	github.com/KLORQ/quarshell-policy v0.2.0
-	github.com/KLORQ/quarshell-proto v0.2.3
-	github.com/KLORQ/quarshell-proxy v0.1.2
-	github.com/KLORQ/quarshell-runtime v0.1.2
-	github.com/KLORQ/quarshell-sdk v0.1.2
+	github.com/KLORQ/quarshell-core v0.5.1
+	github.com/KLORQ/quarshell-driver v0.2.2
+	github.com/KLORQ/quarshell-policy v0.2.1
+	github.com/KLORQ/quarshell-proto v0.2.4
+	github.com/KLORQ/quarshell-proxy v0.1.3
+	github.com/KLORQ/quarshell-runtime v0.1.3
+	github.com/KLORQ/quarshell-sdk v0.1.3
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/coder/websocket v1.8.15
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/muesli/termenv v0.16.0
 	github.com/rivo/tview v0.42.0
-	golang.org/x/crypto v0.58.0
 	golang.org/x/sys v0.49.0
 	golang.org/x/term v0.47.0
 	google.golang.org/grpc v1.84.0
