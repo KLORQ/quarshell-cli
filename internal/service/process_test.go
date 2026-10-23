@@ -185,13 +185,6 @@ func TestGatewayLogSourceTreatsAllAsUnfiltered(t *testing.T) {
 	}
 }
 
-func isolateGatewayConfig(t *testing.T) {
-	t.Helper()
-	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("OPENSHELL_GATEWAY", "")
-	t.Setenv("CAUTEM_GATEWAY_URL", "")
-}
-
 func TestExitCodeFindsWrappedRemoteExitError(t *testing.T) {
 	err := fmt.Errorf("sandbox command: %w", &ExitError{Code: 23})
 	if code, ok := ExitCode(err); !ok || code != 23 {

@@ -40,21 +40,21 @@ func TestSaveOwnerOnly(t *testing.T) {
 
 func TestResolveImageExperimentalGUIGPU(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	t.Setenv("CAUTEM_USE_GHCR", "")
+	t.Setenv("QUARSHELL_USE_GHCR", "")
 	local, err := ResolveImage("gui-gpu", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if local != "cautem-sandbox:gui-gpu" {
+	if local != "quarshell-sandbox:gui-gpu" {
 		t.Fatalf("local GUI+GPU image = %q", local)
 	}
 
-	t.Setenv("CAUTEM_USE_GHCR", "1")
-	remote, err := ResolveImage("cautem/gui-gpu", "")
+	t.Setenv("QUARSHELL_USE_GHCR", "1")
+	remote, err := ResolveImage("quarshell/gui-gpu", "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if remote != "ghcr.io/cautem/cautem/sandboxes/gui-gpu:latest" {
+	if remote != "ghcr.io/quarshell/quarshell/sandboxes/gui-gpu:latest" {
 		t.Fatalf("published GUI+GPU image = %q", remote)
 	}
 }

@@ -4,7 +4,7 @@
 
 ### Removed
 
-- Remove the `inference` command and `CAUTEM_INFERENCE_*` sidecar configuration; OpenShell uses sandbox provider attachments and native provider endpoints.
+- Remove the `inference` command and `QUARSHELL_INFERENCE_*` sidecar configuration; OpenShell uses sandbox provider attachments and native provider endpoints.
 
 ### Changed
 
@@ -76,13 +76,13 @@
 
 ### Changed
 
-- Update quarshell-driver to v0.1.7 so first-run sandboxes use the published cautem base when no local image is cached.
+- Update quarshell-driver to v0.1.7 so first-run sandboxes use the published quarshell base when no local image is cached.
 
 ## [v0.1.6] - 2026-10-11
 
 ### Changed
 
-- Rename the public CLI command, binary, installer and shell completions to `cautem`.
+- Rename the public CLI command, binary, installer and shell completions to `quarshell`.
 
 ## [v0.1.0-beta.3] - 2026-10-10
 
@@ -148,9 +148,9 @@
 
 ### Changed
 
-- Prefer `CAUTEM_*` env over legacy `OPENSHELL_*` when both are set.
+- Prefer `QUARSHELL_*` env over legacy `OPENSHELL_*` when both are set.
 - Doctor warns on KEK migration need and binary-scoped identity limits on Docker Desktop.
 
 ### Fixed
 
-- GoReleaser archive helpers use `strip_parent` so paths land at `libexec/cautem/linux-<arch>/`.
+- GoReleaser archive helpers use `strip_parent` so paths land at `libexec/quarshell/linux-<arch>/`.

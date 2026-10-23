@@ -72,7 +72,7 @@ func TestSandboxTokenFromEnvironment(t *testing.T) {
 func TestSandboxTokenFromDescriptorBoundAuthBundle(t *testing.T) {
 	dir := t.TempDir()
 	descriptor := isolation.Descriptor{
-		Version: isolation.DescriptorVersion, BackendName: "cautem/vm", SandboxID: "sandbox-a",
+		Version: isolation.DescriptorVersion, BackendName: "quarshell/vm", SandboxID: "sandbox-a",
 		SessionID: "11111111-1111-4111-8111-111111111111", Generation: "g0000000000000001",
 		RootfsDigest:  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		RuntimeDigest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -102,9 +102,9 @@ func TestSandboxTokenFromDescriptorBoundAuthBundle(t *testing.T) {
 	t.Setenv(EnvSandboxToken, "")
 	t.Setenv(EnvSandboxTokenFile, "")
 	t.Setenv(EnvSupervisorAuthBundleFile, bundlePath)
-	t.Setenv("CAUTEM_ISOLATION_DESCRIPTOR_PATH", descriptorPath)
-	t.Setenv("CAUTEM_SANDBOX", descriptor.SandboxID)
-	t.Setenv("CAUTEM_ADMITTED_ISOLATION_BACKEND", descriptor.BackendName)
+	t.Setenv("QUARSHELL_ISOLATION_DESCRIPTOR_PATH", descriptorPath)
+	t.Setenv("QUARSHELL_SANDBOX", descriptor.SandboxID)
+	t.Setenv("QUARSHELL_ADMITTED_ISOLATION_BACKEND", descriptor.BackendName)
 	got, err := sandboxTokenFromEnvironment()
 	if err != nil || got != "signed.jwt.value" {
 		t.Fatalf("sandboxTokenFromEnvironment() = %q, %v", got, err)
@@ -113,7 +113,7 @@ func TestSandboxTokenFromDescriptorBoundAuthBundle(t *testing.T) {
 	if err != nil || got != "sandbox.jwt.value" {
 		t.Fatalf("sandboxProtocolTokenFromEnvironment() = %q, %v; want Sandbox Protocol bearer", got, err)
 	}
-	t.Setenv("CAUTEM_SANDBOX", "another-sandbox")
+	t.Setenv("QUARSHELL_SANDBOX", "another-sandbox")
 	if _, err := sandboxTokenFromEnvironment(); err == nil {
 		t.Fatal("auth bundle for a different sandbox was accepted")
 	}

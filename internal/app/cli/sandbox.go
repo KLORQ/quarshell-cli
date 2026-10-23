@@ -17,7 +17,7 @@ import (
 
 func runSandbox(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem sandbox create|list|get|stop|start|delete|exec|connect|upload|download|ssh-config|provider")
+		return fmt.Errorf("usage: quarshell sandbox create|list|get|stop|start|delete|exec|connect|upload|download|ssh-config|provider")
 	}
 	switch args[0] {
 	case "create":
@@ -105,13 +105,13 @@ func runSandbox(a *service.App, args []string) error {
 					return fmt.Errorf("sandbox get: unknown flag %q", arg)
 				}
 				if name != "" {
-					return fmt.Errorf("usage: cautem sandbox get NAME [--policy-only]")
+					return fmt.Errorf("usage: quarshell sandbox get NAME [--policy-only]")
 				}
 				name = arg
 			}
 		}
 		if name == "" {
-			return fmt.Errorf("usage: cautem sandbox get NAME [--policy-only]")
+			return fmt.Errorf("usage: quarshell sandbox get NAME [--policy-only]")
 		}
 		if policyOnly {
 			return a.PolicyGet(name, "full")
@@ -172,7 +172,7 @@ func runSandbox(a *service.App, args []string) error {
 		return runSandboxTemplate(a, args[1:])
 	case "provider":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem sandbox provider list|attach|detach|status …")
+			return fmt.Errorf("usage: quarshell sandbox provider list|attach|detach|status …")
 		}
 		switch args[1] {
 		case "list", "ls":
@@ -183,12 +183,12 @@ func runSandbox(a *service.App, args []string) error {
 			return a.SandboxProviderListPage(sandbox, pageSize, pageToken, output)
 		case "attach":
 			if len(args) != 4 {
-				return fmt.Errorf("usage: cautem sandbox provider attach <sandbox> <provider>")
+				return fmt.Errorf("usage: quarshell sandbox provider attach <sandbox> <provider>")
 			}
 			return a.ProviderAttach(args[2], args[3])
 		case "detach":
 			if len(args) != 4 {
-				return fmt.Errorf("usage: cautem sandbox provider detach <sandbox> <provider>")
+				return fmt.Errorf("usage: quarshell sandbox provider detach <sandbox> <provider>")
 			}
 			return a.ProviderDetach(args[2], args[3])
 		case "status":
@@ -253,7 +253,7 @@ func parseSandboxProviderStatusArgs(args []string) (sandbox, provider, receipt, 
 		}
 	}
 	if len(positional) != 2 {
-		return "", "", "", "", false, 0, fmt.Errorf("usage: cautem sandbox provider status <sandbox> <provider> [--receipt ID] [--wait] [--timeout SECONDS] [-o table|yaml|json]")
+		return "", "", "", "", false, 0, fmt.Errorf("usage: quarshell sandbox provider status <sandbox> <provider> [--receipt ID] [--wait] [--timeout SECONDS] [-o table|yaml|json]")
 	}
 	if output != "table" && output != "yaml" && output != "json" {
 		return "", "", "", "", false, 0, fmt.Errorf("sandbox provider status: --output must be table|yaml|json")
@@ -550,7 +550,7 @@ func runExec(a *service.App, args []string) error {
 
 func runSandboxTemplate(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem sandbox template create|list|get|delete …")
+		return fmt.Errorf("usage: quarshell sandbox template create|list|get|delete …")
 	}
 	switch args[0] {
 	case "create":
@@ -760,7 +760,7 @@ func runSandboxTemplate(a *service.App, args []string) error {
 			return err
 		}
 		if name == "" {
-			return fmt.Errorf("usage: cautem sandbox template get <name>")
+			return fmt.Errorf("usage: quarshell sandbox template get <name>")
 		}
 		if gateway {
 			return a.GatewayTemplateGet(name)
@@ -772,7 +772,7 @@ func runSandboxTemplate(a *service.App, args []string) error {
 			return err
 		}
 		if name == "" {
-			return fmt.Errorf("usage: cautem sandbox template delete <name>")
+			return fmt.Errorf("usage: quarshell sandbox template delete <name>")
 		}
 		if gateway {
 			return a.GatewayTemplateDelete(name)
@@ -832,12 +832,12 @@ func runSSHProxy(a *service.App, args []string) error {
 }
 
 // runProxy is the sidecar / host CONNECT proxy entrypoint.
-// Usage: cautem proxy --listen ADDR --policy PATH [--ca-out PATH]
+// Usage: quarshell proxy --listen ADDR --policy PATH [--ca-out PATH]
 
 // runProxy is the sidecar / host CONNECT proxy entrypoint.
-// Usage: cautem proxy --listen ADDR --policy PATH [--ca-out PATH]
+// Usage: quarshell proxy --listen ADDR --policy PATH [--ca-out PATH]
 func runProxy(a *service.App, args []string) error {
-	if os.Getenv("CAUTEM_HOST_PARENT_LIVENESS") == "1" {
+	if os.Getenv("QUARSHELL_HOST_PARENT_LIVENESS") == "1" {
 		watchParentLiveness(os.Stdin, func() {
 			if process, err := os.FindProcess(os.Getpid()); err == nil {
 				_ = process.Kill()
@@ -886,7 +886,7 @@ func runProxy(a *service.App, args []string) error {
 			i++
 			opt.LogDir = args[i]
 		case "--help", "-h":
-			fmt.Fprintln(os.Stderr, "usage: cautem proxy --listen ADDR --policy PATH [--ca-out PATH] [--gateway URL] [--gateway-host-mode] [--sandbox NAME]")
+			fmt.Fprintln(os.Stderr, "usage: quarshell proxy --listen ADDR --policy PATH [--ca-out PATH] [--gateway URL] [--gateway-host-mode] [--sandbox NAME]")
 			return nil
 		default:
 			if strings.HasPrefix(args[i], "-") {
@@ -896,7 +896,7 @@ func runProxy(a *service.App, args []string) error {
 		}
 	}
 	if strings.TrimSpace(opt.Policy) == "" {
-		return fmt.Errorf("usage: cautem proxy --listen ADDR --policy PATH [--ca-out PATH]")
+		return fmt.Errorf("usage: quarshell proxy --listen ADDR --policy PATH [--ca-out PATH]")
 	}
 	return a.Proxy(opt)
 }

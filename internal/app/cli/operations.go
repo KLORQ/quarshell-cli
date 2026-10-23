@@ -11,7 +11,7 @@ import (
 
 func runForward(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem forward start|stop|list …")
+		return fmt.Errorf("usage: quarshell forward start|stop|list …")
 	}
 	switch args[0] {
 	case "start":
@@ -20,7 +20,7 @@ func runForward(a *service.App, args []string) error {
 			return err
 		}
 		if parsed.Name == "" {
-			return fmt.Errorf("usage: cautem forward start [bind:]port <sandbox> [-d]")
+			return fmt.Errorf("usage: quarshell forward start [bind:]port <sandbox> [-d]")
 		}
 		return a.ForwardStart(parsed.Name, parsed.Port, parsed.Port, parsed.Background)
 	case "stop":
@@ -35,7 +35,7 @@ func runForward(a *service.App, args []string) error {
 		return a.ForwardStop(id)
 	case "list", "ls":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem forward list")
+			return fmt.Errorf("usage: quarshell forward list")
 		}
 		return a.ForwardList()
 	case "service":
@@ -83,12 +83,12 @@ func runForwardService(a *service.App, args []string) error {
 			continue
 		}
 		if strings.HasPrefix(arg, "-") || sandbox != "" {
-			return fmt.Errorf("usage: cautem forward service [--target-port PORT] [--target-host HOST] [--local [bind:]PORT] [NAME]")
+			return fmt.Errorf("usage: quarshell forward service [--target-port PORT] [--target-host HOST] [--local [bind:]PORT] [NAME]")
 		}
 		sandbox = arg
 	}
 	if targetPort == 0 {
-		return fmt.Errorf("usage: cautem forward service --target-port PORT [--target-host HOST] [--local [bind:]PORT] [NAME]")
+		return fmt.Errorf("usage: quarshell forward service --target-port PORT [--target-host HOST] [--local [bind:]PORT] [NAME]")
 	}
 	if local == "" {
 		local = strconv.Itoa(targetPort)
@@ -98,7 +98,7 @@ func runForwardService(a *service.App, args []string) error {
 
 func runService(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem service expose|list|get|delete …")
+		return fmt.Errorf("usage: quarshell service expose|list|get|delete …")
 	}
 	switch args[0] {
 	case "expose":
@@ -115,7 +115,7 @@ func runService(a *service.App, args []string) error {
 		return a.ServiceListPage(options)
 	case "get":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem service get <sandbox> [service]")
+			return fmt.Errorf("usage: quarshell service get <sandbox> [service]")
 		}
 		if len(args) > 3 {
 			return fmt.Errorf("unexpected argument %q", args[3])
@@ -127,7 +127,7 @@ func runService(a *service.App, args []string) error {
 		return a.ServiceGet(sandbox, name)
 	case "delete", "rm":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem service delete <sandbox> [service]")
+			return fmt.Errorf("usage: quarshell service delete <sandbox> [service]")
 		}
 		if len(args) > 3 {
 			return fmt.Errorf("unexpected argument %q", args[3])
@@ -201,7 +201,7 @@ func parseServiceListArgs(args []string) (service.ServiceListOptions, error) {
 
 func runRule(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem rule get|approve|reject|history|clear …")
+		return fmt.Errorf("usage: quarshell rule get|approve|reject|history|clear …")
 	}
 	switch args[0] {
 	case "get", "list", "ls":
@@ -225,7 +225,7 @@ func runRule(a *service.App, args []string) error {
 					return fmt.Errorf("unknown flag %q", args[i])
 				}
 				if sandbox != "" {
-					return fmt.Errorf("usage: cautem rule get [sandbox] [--status STATUS]")
+					return fmt.Errorf("usage: quarshell rule get [sandbox] [--status STATUS]")
 				}
 				sandbox = args[i]
 			}
@@ -233,7 +233,7 @@ func runRule(a *service.App, args []string) error {
 		return a.RuleListFilter(sandbox, status)
 	case "history":
 		if len(args) > 2 {
-			return fmt.Errorf("usage: cautem rule history [sandbox]")
+			return fmt.Errorf("usage: quarshell rule history [sandbox]")
 		}
 		sandbox := ""
 		if len(args) > 1 {
@@ -259,7 +259,7 @@ func runRule(a *service.App, args []string) error {
 			case sandbox == "":
 				sandbox = arg
 			default:
-				return fmt.Errorf("usage: cautem rule approve-all [NAME] [--include-security-flagged]")
+				return fmt.Errorf("usage: quarshell rule approve-all [NAME] [--include-security-flagged]")
 			}
 		}
 		return a.RuleApproveAll(sandbox, includeSecurityFlagged)
@@ -309,7 +309,7 @@ func parseRuleAction(args []string) (id, reason string, err error) {
 		}
 	}
 	if id == "" {
-		return "", "", fmt.Errorf("usage: cautem rule approve|reject [--chunk-id] ID [--reason TEXT]")
+		return "", "", fmt.Errorf("usage: quarshell rule approve|reject [--chunk-id] ID [--reason TEXT]")
 	}
 	return id, reason, nil
 }

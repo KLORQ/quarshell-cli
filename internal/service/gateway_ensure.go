@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/KLORQ/quarshell-core/defaults"
-	"github.com/KLORQ/quarshell-slogx"
+	"github.com/KLORQ/quarshell-core/slogx"
 )
 
 const localGatewayName = "local"
@@ -50,7 +50,7 @@ func (a *App) GatewayEnsure() error {
 	bin, err := findGatewayBinary()
 	if err != nil {
 		log.Error("gateway binary not found", slogx.Err(err))
-		return fmt.Errorf("gateway ensure: %w\nStart manually: quarshell-gateway --listen %s\nThen: cautem gateway add local --url %s && cautem gateway select local",
+		return fmt.Errorf("gateway ensure: %w\nStart manually: quarshell-gateway --listen %s\nThen: quarshell gateway add local --url %s && quarshell gateway select local",
 			err, defaults.GatewayListen, localGatewayURL)
 	}
 	logPath, err := gatewayLogPath()
@@ -76,11 +76,11 @@ func (a *App) GatewayEnsure() error {
 		return fmt.Errorf("gateway ensure: TLS: %w", err)
 	}
 	gatewayArgs := []string{"--listen", "127.0.0.1:17670", "--grpc-listen", localGatewayGRPCEndpoint, "--data-dir", dataDir, "--tls-cert", tlsFiles.ServerCert, "--tls-key", tlsFiles.ServerKey, "--tls-client-ca", tlsFiles.CA}
-	runtimeName := strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_RUNTIME"))
+	runtimeName := strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_RUNTIME"))
 	if runtimeName != "" {
 		gatewayArgs = append(gatewayArgs, "--runtime", runtimeName)
 	}
-	if runtimeConfig := strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_RUNTIME_CONFIG")); runtimeConfig != "" {
+	if runtimeConfig := strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_RUNTIME_CONFIG")); runtimeConfig != "" {
 		gatewayArgs = append(gatewayArgs, "--runtime-config", runtimeConfig)
 	}
 	gatewayEnv := []string{"QUARSHELL_TOKEN=" + token}
@@ -98,7 +98,7 @@ func (a *App) GatewayEnsure() error {
 		)
 	}
 	serviceStarted := false
-	if os.Getenv("CAUTEM_GATEWAY_SERVICE") != "0" {
+	if os.Getenv("QUARSHELL_GATEWAY_SERVICE") != "0" {
 		serviceStarted, _ = startGatewayService(bin, gatewayArgs, gatewayEnv, dataDir, logPath)
 	}
 	pid := 0
@@ -215,7 +215,7 @@ func findGatewayBinary() (string, error) {
 			return c, nil
 		}
 	}
-	return "", fmt.Errorf("quarshell-gateway binary not found next to cautem or on PATH")
+	return "", fmt.Errorf("quarshell-gateway binary not found next to quarshell or on PATH")
 }
 
 func gatewayLogPath() (string, error) {
@@ -223,7 +223,7 @@ func gatewayLogPath() (string, error) {
 	if err != nil {
 		dir = os.TempDir()
 	}
-	dir = filepath.Join(dir, "cautem")
+	dir = filepath.Join(dir, "quarshell")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
 	}

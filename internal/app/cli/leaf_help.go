@@ -23,9 +23,9 @@ func leafCommandHelp(path string) (string, bool) {
 		return "", false
 	}
 	var out strings.Builder
-	fmt.Fprintf(&out, "cautem %s — %s\n\nUsage:\n", path, entry[0])
+	fmt.Fprintf(&out, "quarshell %s — %s\n\nUsage:\n", path, entry[0])
 	for _, line := range strings.Split(entry[1], "\n") {
-		fmt.Fprintf(&out, "  cautem %s\n", line)
+		fmt.Fprintf(&out, "  quarshell %s\n", line)
 	}
 	if entry[2] != "" {
 		fmt.Fprintf(&out, "\n%s\n", entry[2])

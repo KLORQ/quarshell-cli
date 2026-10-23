@@ -82,7 +82,7 @@ func prepareGitAwareUpload(ctx context.Context, source string, enabled bool) (pa
 		return "", cleanup, false, fmt.Errorf("git filtering selected no files from upload path %q; pass --no-git-ignore to upload unfiltered", source)
 	}
 	isFile := info.Mode().IsRegular()
-	stageRoot, err := os.MkdirTemp("", "cautem-upload-")
+	stageRoot, err := os.MkdirTemp("", "quarshell-upload-")
 	if err != nil {
 		return "", cleanup, false, fmt.Errorf("stage Git-aware upload: %w", err)
 	}

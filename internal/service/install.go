@@ -10,13 +10,13 @@ import (
 	"github.com/KLORQ/quarshell-core/defaults"
 )
 
-// InstallOpts for `cautem install`.
+// InstallOpts for `quarshell install`.
 type InstallOpts struct {
 	Force bool
 }
 
-// Install copies this binary into ~/.local/share/cautem/bin/cautem and symlinks
-// ~/.local/bin/cautem so the CLI is available from any directory.
+// Install copies this binary into ~/.local/share/quarshell/bin/quarshell and symlinks
+// ~/.local/bin/quarshell so the CLI is available from any directory.
 func (a *App) Install(opt InstallOpts) error {
 	src, err := os.Executable()
 	if err != nil {
@@ -31,10 +31,10 @@ func (a *App) Install(opt InstallOpts) error {
 	if err != nil {
 		return fmt.Errorf("install: home: %w", err)
 	}
-	shareBin := filepath.Join(home, ".local", "share", "cautem", "bin")
-	dst := filepath.Join(shareBin, "cautem")
+	shareBin := filepath.Join(home, ".local", "share", "quarshell", "bin")
+	dst := filepath.Join(shareBin, "quarshell")
 	linkDir := filepath.Join(home, ".local", "bin")
-	link := filepath.Join(linkDir, "cautem")
+	link := filepath.Join(linkDir, "quarshell")
 
 	if err := os.MkdirAll(shareBin, 0o755); err != nil {
 		return fmt.Errorf("install: mkdir %s: %w", shareBin, err)
@@ -60,7 +60,7 @@ func (a *App) Install(opt InstallOpts) error {
 		fmt.Printf("install: add %s to your PATH, e.g.:\n", linkDir)
 		fmt.Printf("  export PATH=\"%s:$PATH\"\n", linkDir)
 	} else {
-		fmt.Println("install: ok — run `cautem version` from any directory")
+		fmt.Println("install: ok — run `quarshell version` from any directory")
 	}
 	if err := a.GatewayEnsure(); err != nil {
 		fmt.Fprintf(os.Stderr, "install: gateway ensure: %v\n", err)
@@ -77,7 +77,7 @@ func copyFileAtomic(src, dst string) error {
 	}
 	defer in.Close()
 
-	tmp, err := os.CreateTemp(filepath.Dir(dst), "cautem-install-*")
+	tmp, err := os.CreateTemp(filepath.Dir(dst), "quarshell-install-*")
 	if err != nil {
 		return err
 	}

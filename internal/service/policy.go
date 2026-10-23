@@ -14,12 +14,12 @@ import (
 	"time"
 
 	"github.com/KLORQ/quarshell-cli/internal/outfmt"
-	"github.com/KLORQ/quarshell-core/engine"
-	"github.com/KLORQ/quarshell-core/policy"
+	"github.com/KLORQ/quarshell-core/slogx"
+	"github.com/KLORQ/quarshell-policy/corepolicy"
+	"github.com/KLORQ/quarshell-policy/engine"
 	gatewayv1 "github.com/KLORQ/quarshell-proto/gen/go/openshell/gateway/v1"
 	sandboxv1 "github.com/KLORQ/quarshell-proto/gen/go/openshell/sandbox/v1"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	"github.com/KLORQ/quarshell-slogx"
 	"gopkg.in/yaml.v3"
 )
 
@@ -585,7 +585,7 @@ func (a *App) PolicyUpdate(sandbox string, endpoints, allows, denies, binaries [
 		}
 		return err
 	}
-	tmp, err := os.CreateTemp("", "cautem-policy-update-*.yaml")
+	tmp, err := os.CreateTemp("", "quarshell-policy-update-*.yaml")
 	if err != nil {
 		return err
 	}
@@ -871,7 +871,7 @@ func (a *App) loadOrDenyAll(path string) (policy.Document, string, error) {
 		}
 		return doc, abs, nil
 	}
-	dir, err := os.MkdirTemp("", "cautem-policy-*")
+	dir, err := os.MkdirTemp("", "quarshell-policy-*")
 	if err != nil {
 		return policy.Document{}, "", err
 	}
@@ -887,4 +887,4 @@ func (a *App) loadOrDenyAll(path string) (policy.Document, string, error) {
 	return doc, abs, nil
 }
 
-// InitOpts for `cautem init --agent …`.
+// InitOpts for `quarshell init --agent …`.

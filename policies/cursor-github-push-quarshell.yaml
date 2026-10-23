@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 cautem
+# SPDX-FileCopyrightText: Copyright (c) 2026 quarshell
 # SPDX-License-Identifier: Apache-2.0
 #
-# Cursor Agent + GitHub write (cautem) in one base policy.
+# Cursor Agent + GitHub write (quarshell) in one base policy.
 # Use with: --from cursor --provider gh -- agent
 # Cursor endpoints live in base (not only provider composition) so agent works
 # even before/without a cursor provider instance. gh provider still supplies tokens.
@@ -23,7 +23,7 @@ filesystem_policy:
   - /tmp
   - /dev/null
   - /workspace
-  - /cautem/data
+  - /quarshell/data
   - /sandbox
 landlock:
   compatibility: best_effort
@@ -139,8 +139,8 @@ network_policies:
       ports:
       - 80
       - 443
-  github-git-cautem:
-    name: github-git-cautem
+  github-git-quarshell:
+    name: github-git-quarshell
     endpoints:
     - host: github.com
       port: 443
@@ -153,24 +153,24 @@ network_policies:
       rules:
       - allow:
           method: GET
-          path: /cautem/**
+          path: /quarshell/**
       - allow:
           method: HEAD
-          path: /cautem/**
+          path: /quarshell/**
       - allow:
           method: OPTIONS
-          path: /cautem/**
+          path: /quarshell/**
       - allow:
           method: POST
-          path: /cautem/**/git-upload-pack
+          path: /quarshell/**/git-upload-pack
       - allow:
           method: POST
-          path: /cautem/**/git-receive-pack
+          path: /quarshell/**/git-receive-pack
     binaries:
     - path: /usr/bin/git
     - path: /usr/local/bin/git
-  github-api-cautem:
-    name: github-api-cautem
+  github-api-quarshell:
+    name: github-api-quarshell
     endpoints:
     - host: api.github.com
       port: 443
@@ -183,31 +183,31 @@ network_policies:
       rules:
       - allow:
           method: GET
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: HEAD
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: POST
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: PUT
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: PATCH
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: DELETE
-          path: /repos/cautem/**
+          path: /repos/quarshell/**
       - allow:
           method: POST
-          path: /orgs/cautem/repos
+          path: /orgs/quarshell/repos
       - allow:
           method: GET
-          path: /orgs/cautem
+          path: /orgs/quarshell
       - allow:
           method: GET
-          path: /orgs/cautem/**
+          path: /orgs/quarshell/**
       - allow:
           method: POST
           path: /user/repos

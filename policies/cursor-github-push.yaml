@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Cursor Agent + GitHub push/create-repo base policy.
-# Replace YOUR_ORG with your GitHub org/user (sed -i '' 's/YOUR_ORG/cautem/g' …).
+# Replace YOUR_ORG with your GitHub org/user (sed -i '' 's/YOUR_ORG/quarshell/g' …).
 #
-#   cautem sandbox create --name cursor --from cursor \
+#   quarshell sandbox create --name cursor --from cursor \
 #     --policy quarshell-cli/policies/cursor-github-push.yaml \
 #     --provider cursor --provider gh
 
@@ -25,7 +25,7 @@ filesystem_policy:
   - /tmp
   - /dev/null
   - /workspace
-  - /cautem/data
+  - /quarshell/data
   - /sandbox
 landlock:
   compatibility: best_effort

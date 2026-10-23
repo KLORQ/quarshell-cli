@@ -59,16 +59,16 @@ func helpText(path []string) string {
 	return rootHelp
 }
 
-const rootHelp = `cautem — agent sandbox CLI
+const rootHelp = `quarshell — agent sandbox CLI
 
 Usage:
-  cautem [global flags] <command> [flags]
+  quarshell [global flags] <command> [flags]
 
 Global flags:
-  -g, --gateway NAME     Select gateway (or CAUTEM_GATEWAY)
+  -g, --gateway NAME     Select gateway (or QUARSHELL_GATEWAY)
   --gateway-endpoint URL Connect directly to a gateway endpoint
   --gateway-insecure    Skip TLS certificate verification for the gateway
-  --workspace NAME       Default workspace (or CAUTEM_WORKSPACE)
+  --workspace NAME       Default workspace (or QUARSHELL_WORKSPACE)
   -o, --output FORMAT    text|json|yaml
   -v, --verbose          Enable debug logging (repeatable)
       --color <WHEN>     Color output: auto, always, or never [env: QUARSHELL_COLOR]
@@ -99,26 +99,26 @@ Commands:
   completions        Shell completions
   version            Print version
 
-Run 'cautem <command> --help' for details.
+Run 'quarshell <command> --help' for details.
 `
 
 var helpTree = map[string]string{
-	"sandbox": `cautem sandbox — manage sandboxes
+	"sandbox": `quarshell sandbox — manage sandboxes
 
 Usage:
-	  cautem sandbox create|list|get|stop|start|delete|exec|connect|upload|download|ssh-config|provider|template …
+	  quarshell sandbox create|list|get|stop|start|delete|exec|connect|upload|download|ssh-config|provider|template …
 
 Aliases: sb
 
 Examples:
-  cautem sandbox create --name app --from ollama
-  cautem sandbox list
-  cautem sandbox exec app -- ls /
+  quarshell sandbox create --name app --from ollama
+  quarshell sandbox list
+  quarshell sandbox exec app -- ls /
 `,
-	"sandbox exec": `cautem sandbox exec — execute a command in a running sandbox
+	"sandbox exec": `quarshell sandbox exec — execute a command in a running sandbox
 
 Usage:
-  cautem sandbox exec [NAME] [flags] -- COMMAND [ARG…]
+  quarshell sandbox exec [NAME] [flags] -- COMMAND [ARG…]
 
 Flags:
   -n, --name NAME     Select sandbox by name
@@ -129,12 +129,12 @@ Flags:
   --no-login-shell    Run the command with a non-login shell
   --env KEY=VALUE     Set a non-secret command environment variable (repeatable)
 
-When stdin is piped, cautem forwards it without allocating a pseudo-terminal.
+When stdin is piped, quarshell forwards it without allocating a pseudo-terminal.
 `,
-	"sandbox create": `cautem sandbox create — create a sandbox
+	"sandbox create": `quarshell sandbox create — create a sandbox
 
 Usage:
-  cautem sandbox create --name NAME [flags]
+  quarshell sandbox create --name NAME [flags]
 
 Flags:
   --name NAME
@@ -173,28 +173,28 @@ service. Gateway-managed creates include the exposure in the create request;
 if service registration fails, Gateway attempts to remove the new sandbox.
 Exposure forces the sandbox to remain available for the registered service.
 `,
-	"sandbox template": `cautem sandbox template — workload templates
+	"sandbox template": `quarshell sandbox template — workload templates
 
 Usage:
-  cautem sandbox template create|list|get|delete …
+  quarshell sandbox template create|list|get|delete …
 
 Create accepts a positional template name and workload fields:
-  cautem sandbox template create NAME --image IMAGE --cpu 2 --memory 4Gi --gpu 1
+  quarshell sandbox template create NAME --image IMAGE --cpu 2 --memory 4Gi --gpu 1
   --env KEY=VALUE --label KEY=VALUE --driver-config-json JSON
 
 Add --gateway to create/list/get/delete a workspace-scoped template on the
 selected Gateway. Without it, templates remain local to this CLI profile.
 `,
-	"sandbox provider": `cautem sandbox provider — attach providers to a sandbox
+	"sandbox provider": `quarshell sandbox provider — attach providers to a sandbox
 
 Usage:
-  cautem sandbox provider list|attach|detach|status …
+  quarshell sandbox provider list|attach|detach|status …
 `,
-	"sandbox list": `cautem sandbox list — list sandboxes
+	"sandbox list": `quarshell sandbox list — list sandboxes
 
 Usage:
-  cautem sandbox list [--page-size N] [--page-token TOKEN] [--selector EXPR] [-o table|yaml|json]
-  cautem sandbox list [--ids|--names] [--all-workspaces]
+  quarshell sandbox list [--page-size N] [--page-token TOKEN] [--selector EXPR] [-o table|yaml|json]
+  quarshell sandbox list [--ids|--names] [--all-workspaces]
 
 Flags:
   --page-size N         Maximum sandboxes in this page (default 100)
@@ -207,87 +207,87 @@ Flags:
 
 The ls alias is also accepted.
 `,
-	"sandbox get": `cautem sandbox get — inspect one sandbox or print its active policy
+	"sandbox get": `quarshell sandbox get — inspect one sandbox or print its active policy
 
 Usage:
-	  cautem sandbox get NAME [--policy-only]
+	  quarshell sandbox get NAME [--policy-only]
 
 --policy-only prints the active full policy YAML to stdout.
 `,
-	"sandbox start": `cautem sandbox start — start a stopped sandbox
+	"sandbox start": `quarshell sandbox start — start a stopped sandbox
 
 Usage:
-  cautem sandbox start [NAME]
+  quarshell sandbox start [NAME]
 `,
-	"sandbox stop": `cautem sandbox stop — stop a running sandbox
+	"sandbox stop": `quarshell sandbox stop — stop a running sandbox
 
 Usage:
-  cautem sandbox stop [NAME]
+  quarshell sandbox stop [NAME]
 `,
-	"sandbox delete": `cautem sandbox delete — delete one or more sandboxes
+	"sandbox delete": `quarshell sandbox delete — delete one or more sandboxes
 
 Usage:
-  cautem sandbox delete NAME...
-  cautem sandbox delete --all
+  quarshell sandbox delete NAME...
+  quarshell sandbox delete --all
 
 The rm and remove aliases are also accepted. --all cannot be combined with names.
 `,
-	"sandbox upload": `cautem sandbox upload — upload files into a sandbox
+	"sandbox upload": `quarshell sandbox upload — upload files into a sandbox
 
 Usage:
-  cautem sandbox upload NAME LOCAL_PATH [SANDBOX_DEST] [--no-git-ignore]
+  quarshell sandbox upload NAME LOCAL_PATH [SANDBOX_DEST] [--no-git-ignore]
 
 The default destination is /workspace. --no-git-ignore includes files matched
 by .gitignore and is available only for upload.
 `,
-	"sandbox download": `cautem sandbox download — download files from a sandbox
+	"sandbox download": `quarshell sandbox download — download files from a sandbox
 
 Usage:
-  cautem sandbox download NAME SANDBOX_PATH [LOCAL_DEST]
+  quarshell sandbox download NAME SANDBOX_PATH [LOCAL_DEST]
 
 The default local destination is the current directory.
 `,
-	"sandbox ssh-config": `cautem sandbox ssh-config — print or install SSH configuration
+	"sandbox ssh-config": `quarshell sandbox ssh-config — print or install SSH configuration
 
 Usage:
-  cautem sandbox ssh-config NAME [--install]
+  quarshell sandbox ssh-config NAME [--install]
 `,
-	"sandbox connect": `cautem sandbox connect — connect with an editor or command
+	"sandbox connect": `quarshell sandbox connect — connect with an editor or command
 
 Usage:
-  cautem sandbox connect [NAME] [--editor vscode|cursor]
-  cautem sandbox connect [NAME] -- COMMAND [ARG...]
+  quarshell sandbox connect [NAME] [--editor vscode|cursor]
+  quarshell sandbox connect [NAME] -- COMMAND [ARG...]
 
 --editor cannot be combined with a command.
 `,
-	"sandbox provider list": `cautem sandbox provider list — list providers attached to a sandbox
+	"sandbox provider list": `quarshell sandbox provider list — list providers attached to a sandbox
 
 Usage:
-  cautem sandbox provider list [SANDBOX] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]
+  quarshell sandbox provider list [SANDBOX] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]
 
 The default sandbox is the last-used sandbox. Table output prints the next page token; JSON/YAML include next_page_token.
 `,
-	"sandbox provider attach": `cautem sandbox provider attach — attach a provider
+	"sandbox provider attach": `quarshell sandbox provider attach — attach a provider
 
 Usage:
-  cautem sandbox provider attach SANDBOX PROVIDER
+  quarshell sandbox provider attach SANDBOX PROVIDER
 `,
-	"sandbox provider detach": `cautem sandbox provider detach — detach a provider
+	"sandbox provider detach": `quarshell sandbox provider detach — detach a provider
 
 Usage:
-  cautem sandbox provider detach SANDBOX PROVIDER
+  quarshell sandbox provider detach SANDBOX PROVIDER
 `,
-	"sandbox provider status": `cautem sandbox provider status — check whether a sandbox applied a provider change
+	"sandbox provider status": `quarshell sandbox provider status — check whether a sandbox applied a provider change
 
 Usage:
-  cautem sandbox provider status SANDBOX PROVIDER [--receipt ID] [--wait] [--timeout SECONDS] [-o table|yaml|json]
+  quarshell sandbox provider status SANDBOX PROVIDER [--receipt ID] [--wait] [--timeout SECONDS] [-o table|yaml|json]
 
 --wait polls until the provider mutation reaches a terminal readiness state.
 `,
-	"sandbox template create": `cautem sandbox template create — save workload defaults
+	"sandbox template create": `quarshell sandbox template create — save workload defaults
 
 Usage:
-  cautem sandbox template create [NAME|--name NAME] [flags]
+  quarshell sandbox template create [NAME|--name NAME] [flags]
 
 Flags:
   NAME or --name NAME       Template name
@@ -308,189 +308,189 @@ Flags:
 
 --annotation, --ready-within, and --max-burst require --gateway.
 `,
-	"sandbox template list": `cautem sandbox template list — list saved templates
+	"sandbox template list": `quarshell sandbox template list — list saved templates
 
 Usage:
-  cautem sandbox template list [--gateway] [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
+  quarshell sandbox template list [--gateway] [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
 `,
-	"sandbox template get": `cautem sandbox template get — inspect a saved template
+	"sandbox template get": `quarshell sandbox template get — inspect a saved template
 
 Usage:
-  cautem sandbox template get NAME [--gateway]
+  quarshell sandbox template get NAME [--gateway]
 `,
-	"sandbox template delete": `cautem sandbox template delete — delete a saved template
+	"sandbox template delete": `quarshell sandbox template delete — delete a saved template
 
 Usage:
-  cautem sandbox template delete NAME [--gateway]
+  quarshell sandbox template delete NAME [--gateway]
 `,
-	"provider": `cautem provider — provider instances
+	"provider": `quarshell provider — provider instances
 
 Usage:
-  cautem provider create|list|get|update|delete|profile|refresh|effective …
+  quarshell provider create|list|get|update|delete|profile|refresh|effective …
 
 Examples:
-  cautem provider create --name gh --type github --from-existing
-  cautem provider refresh configure NAME --credential-key K --strategy oauth2-refresh-token
+  quarshell provider create --name gh --type github --from-existing
+  quarshell provider refresh configure NAME --credential-key K --strategy oauth2-refresh-token
 `,
-	"provider profile": `cautem provider profile — custom provider YAML profiles
+	"provider profile": `quarshell provider profile — custom provider YAML profiles
 
 Usage:
-  cautem profile list|show|import|update|export|delete|lint …
-  cautem profile import --url https://example.org/profile.yaml
-  cautem profile import --from ./provider-profiles
+  quarshell profile list|show|import|update|export|delete|lint …
+  quarshell profile import --url https://example.org/profile.yaml
+  quarshell profile import --from ./provider-profiles
 `,
-	"profile": `cautem profile — reusable provider definitions
+	"profile": `quarshell profile — reusable provider definitions
 
 Usage:
-  cautem profile list|show|import|update|export|delete|lint …
+  quarshell profile list|show|import|update|export|delete|lint …
 `,
-	"provider refresh": `cautem provider refresh — credential refresh strategies
+	"provider refresh": `quarshell provider refresh — credential refresh strategies
 
 Usage:
-  cautem provider refresh status|configure|rotate|delete …
+  quarshell provider refresh status|configure|rotate|delete …
 
 Strategies: env | oauth2-refresh-token | oauth2-client-credentials | aws-sts-assume-role
 `,
-	"policy": `cautem policy — network policy
+	"policy": `quarshell policy — network policy
 
 Usage:
-  cautem policy get|set|update|list|history|delete|check …
+  quarshell policy get|set|update|list|history|delete|check …
 `,
-	"gateway": `cautem gateway — manage gateways
+	"gateway": `quarshell gateway — manage gateways
 
 Usage:
-  cautem gateway ensure|add|remove|select|info|list|login|logout
+  quarshell gateway ensure|add|remove|select|info|list|login|logout
 
   ensure   start/select local gateway on 127.0.0.1:17670 if needed
 `,
-	"workspace": `cautem workspace — workspaces (gateway-backed)
+	"workspace": `quarshell workspace — workspaces (gateway-backed)
 
 Usage:
-  cautem workspace create --name NAME
-  cautem workspace get NAME
-  cautem workspace list [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
-  cautem workspace delete NAME...
-  cautem workspace member add|remove|list …
+  quarshell workspace create --name NAME
+  quarshell workspace get NAME
+  quarshell workspace list [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
+  quarshell workspace delete NAME...
+  quarshell workspace member add|remove|list …
 `,
-	"workspace create": `cautem workspace create — create a workspace
+	"workspace create": `quarshell workspace create — create a workspace
 
 Usage:
-  cautem workspace create --name NAME [--label KEY=VALUE ...]
+  quarshell workspace create --name NAME [--label KEY=VALUE ...]
 
 Repeat --label to attach workspace metadata labels.
 `,
-	"workspace delete": `cautem workspace delete — delete one or more workspaces
+	"workspace delete": `quarshell workspace delete — delete one or more workspaces
 
 Usage:
-  cautem workspace delete NAME...
+  quarshell workspace delete NAME...
 `,
-	"workspace list": `cautem workspace list — list a page of workspaces
+	"workspace list": `quarshell workspace list — list a page of workspaces
 
 Usage:
-  cautem workspace list [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
+  quarshell workspace list [--page-size N] [--page-token TOKEN] [--label-selector EXPR] [-o table|yaml|json]
 
 The default page size is 100. The returned page token can be passed to --page-token.
 `,
-	"workspace member": `cautem workspace member — manage members
+	"workspace member": `quarshell workspace member — manage members
 
 Usage:
-  cautem workspace member add --workspace NAME --subject SUBJECT [--role user|admin]
-  cautem workspace member remove --workspace NAME --subject SUBJECT
-  cautem workspace member list --workspace NAME [--page-size N] [--page-token TOKEN] [-o table|yaml|json]
+  quarshell workspace member add --workspace NAME --subject SUBJECT [--role user|admin]
+  quarshell workspace member remove --workspace NAME --subject SUBJECT
+  quarshell workspace member list --workspace NAME [--page-size N] [--page-token TOKEN] [-o table|yaml|json]
 `,
-	"service": `cautem service — expose HTTP services
+	"service": `quarshell service — expose HTTP services
 
 Usage:
-  cautem service expose <sandbox> <port> [name]
-  cautem service list|get|delete …
+  quarshell service expose <sandbox> <port> [name]
+  quarshell service list|get|delete …
 
 URL: use the service address returned by the expose command
 `,
-	"forward": `cautem forward — TCP forwards into a sandbox
+	"forward": `quarshell forward — TCP forwards into a sandbox
 
 Usage:
-  cautem forward start <host-port> <sandbox> [-d]
-  cautem forward stop <id>
-  cautem forward list
+  quarshell forward start <host-port> <sandbox> [-d]
+  quarshell forward stop <id>
+  quarshell forward list
 `,
-	"settings": `cautem settings — key/value settings
+	"settings": `quarshell settings — key/value settings
 
 Usage:
-	  cautem settings get [SANDBOX] [--global] [--json]
-	  cautem settings set [SANDBOX] --key KEY --value VALUE [--global --yes]
-	  cautem settings delete [SANDBOX] --key KEY [--global --yes]
+	  quarshell settings get [SANDBOX] [--global] [--json]
+	  quarshell settings set [SANDBOX] --key KEY --value VALUE [--global --yes]
+	  quarshell settings delete [SANDBOX] --key KEY [--global --yes]
 `,
-	"logs": `cautem logs — sandbox logs
+	"logs": `quarshell logs — sandbox logs
 
 Usage:
-  cautem logs [name] [--tail] [-n N] [--since 5m]
+  quarshell logs [name] [--tail] [-n N] [--since 5m]
   Name defaults to the last-used sandbox.
 `,
-	"doctor": `cautem doctor — check the Docker prerequisite
+	"doctor": `quarshell doctor — check the Docker prerequisite
 
 Usage:
-  cautem doctor check
+  quarshell doctor check
 `,
-	"install": `cautem install — install CLI binary and ensure local gateway
+	"install": `quarshell install — install CLI binary and ensure local gateway
 
 Usage:
-  cautem install [--force]
+  quarshell install [--force]
 
-Copies cautem to ~/.local/share/cautem/bin, symlinks ~/.local/bin/cautem,
+Copies quarshell to ~/.local/share/quarshell/bin, symlinks ~/.local/bin/quarshell,
 then starts/selects a local quarshell-gateway if needed.
 `,
-	"whoami": `cautem whoami — print identity
+	"whoami": `quarshell whoami — print identity
 
 Usage:
-  cautem whoami
-  cautem -o json whoami
+  quarshell whoami
+  quarshell -o json whoami
 `,
-	"completions": `cautem completions — shell completions
+	"completions": `quarshell completions — shell completions
 
 Usage:
-  cautem completions <bash|zsh|fish|powershell>
+  quarshell completions <bash|zsh|fish|powershell>
 `,
-	"ssh-proxy": `cautem ssh-proxy — SSH ProxyCommand helper
+	"ssh-proxy": `quarshell ssh-proxy — SSH ProxyCommand helper
 
 Usage:
-  cautem ssh-proxy --gateway URL --sandbox-id ID --token TOKEN [--gateway-name NAME]
-  cautem ssh-proxy --gateway-name NAME --name SANDBOX
-  cautem ssh-proxy --server URL --name SANDBOX
-  cautem ssh-proxy SANDBOX
+  quarshell ssh-proxy --gateway URL --sandbox-id ID --token TOKEN [--gateway-name NAME]
+  quarshell ssh-proxy --gateway-name NAME --name SANDBOX
+  quarshell ssh-proxy --server URL --name SANDBOX
+  quarshell ssh-proxy SANDBOX
 
 This command is invoked by SSH configurations generated with sandbox ssh-config.
 `,
-	"version": `cautem version — print the installed CLI version
+	"version": `quarshell version — print the installed CLI version
 
 Usage:
-  cautem version
+  quarshell version
 `,
-	"status": `cautem status — gateway connectivity
+	"status": `quarshell status — gateway connectivity
 
 Usage:
-  cautem status
-  cautem -o json status
+  quarshell status
+  quarshell -o json status
 `,
-	"init": `cautem init — write an agent starter policy
+	"init": `quarshell init — write an agent starter policy
 
 Usage:
-  cautem init --agent cursor [--dir DIR] [--force]
+  quarshell init --agent cursor [--dir DIR] [--force]
 `,
-	"exec": `cautem exec — execute a command in a sandbox
+	"exec": `quarshell exec — execute a command in a sandbox
 
 Usage:
-  cautem exec [--name] NAME -- COMMAND [ARG ...]
+  quarshell exec [--name] NAME -- COMMAND [ARG ...]
 `,
-	"cp": `cautem cp — copy files between the host and a sandbox
+	"cp": `quarshell cp — copy files between the host and a sandbox
 
 Usage:
-  cautem cp <local-path> <sandbox>:/path
-  cautem cp <sandbox>:/path <local-path>
+  quarshell cp <local-path> <sandbox>:/path
+  quarshell cp <sandbox>:/path <local-path>
 `,
-	"term": `cautem term — interactive sandbox browser
+	"term": `quarshell term — interactive sandbox browser
 
 Usage:
-  cautem term [--theme auto|dark|light]
+  quarshell term [--theme auto|dark|light]
 
 QUARSHELL_THEME sets the default. Auto uses COLORFGBG when available and falls back to dark.
 
@@ -516,9 +516,9 @@ Keys:
   r             Refresh the sandbox list
   q             Quit (Esc returns from logs)
 `,
-	"rule": `cautem rule — approval rules (MVP)
+	"rule": `quarshell rule — approval rules (MVP)
 
 Usage:
-  cautem rule get|approve|approve-all|reject|history|clear …
+  quarshell rule get|approve|approve-all|reject|history|clear …
 `,
 }

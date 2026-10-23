@@ -11,7 +11,7 @@ import (
 //	name:   ssh-proxy --gateway-name G --name N [--server URL]   (-g alias)
 //	legacy: ssh-proxy --server URL --name N
 //
-// plus the cautem shorthand `ssh-proxy <sandbox>` (current gateway).
+// plus the quarshell shorthand `ssh-proxy <sandbox>` (current gateway).
 type SSHProxy struct {
 	GatewayURL  string
 	GatewayName string
@@ -71,7 +71,7 @@ func ParseSSHProxy(args []string) (SSHProxy, error) {
 			return SSHProxy{}, fmt.Errorf("ssh-proxy: --token requires --gateway URL or --gateway-name")
 		}
 	case out.Name == "":
-		return SSHProxy{}, fmt.Errorf("usage: cautem ssh-proxy --gateway-name G --name SANDBOX | --gateway URL --sandbox-id ID --token TOK | <sandbox>")
+		return SSHProxy{}, fmt.Errorf("usage: quarshell ssh-proxy --gateway-name G --name SANDBOX | --gateway URL --sandbox-id ID --token TOK | <sandbox>")
 	}
 	return out, nil
 }
@@ -143,7 +143,7 @@ func ParseSandboxSSHConfig(args []string) (SandboxSSHConfig, error) {
 		}
 	}
 	if out.Name == "" {
-		return SandboxSSHConfig{}, fmt.Errorf("usage: cautem sandbox ssh-config <name> [--install]")
+		return SandboxSSHConfig{}, fmt.Errorf("usage: quarshell sandbox ssh-config <name> [--install]")
 	}
 	return out, nil
 }

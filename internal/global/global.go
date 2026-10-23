@@ -28,15 +28,15 @@ type Context struct {
 //	--workspace NAME
 //	-o/--output json|yaml|text
 //
-// Env: OPENSHELL_GATEWAY (name or URL), CAUTEM_GATEWAY_URL, OPENSHELL_WORKSPACE, CAUTEM_WORKSPACE.
+// Env: OPENSHELL_GATEWAY (name or URL), QUARSHELL_GATEWAY_URL, OPENSHELL_WORKSPACE, QUARSHELL_WORKSPACE.
 func Parse(args []string) (Context, []string) {
 	ctx := Context{
-		Workspace:       firstNonEmpty(os.Getenv("CAUTEM_WORKSPACE"), os.Getenv("OPENSHELL_WORKSPACE"), "default"),
+		Workspace:       firstNonEmpty(os.Getenv("QUARSHELL_WORKSPACE"), os.Getenv("OPENSHELL_WORKSPACE"), "default"),
 		Output:          "text",
 		Color:           firstNonEmpty(os.Getenv("QUARSHELL_COLOR"), "auto"),
-		GatewayInsecure: envEnabled("CAUTEM_GATEWAY_INSECURE") || envEnabled("OPENSHELL_GATEWAY_INSECURE"),
+		GatewayInsecure: envEnabled("QUARSHELL_GATEWAY_INSECURE") || envEnabled("OPENSHELL_GATEWAY_INSECURE"),
 	}
-	if v := firstNonEmpty(os.Getenv("CAUTEM_GATEWAY_URL"), os.Getenv("OPENSHELL_GATEWAY_ENDPOINT"), os.Getenv("OPENSHELL_GATEWAY")); v != "" {
+	if v := firstNonEmpty(os.Getenv("QUARSHELL_GATEWAY_URL"), os.Getenv("OPENSHELL_GATEWAY_ENDPOINT"), os.Getenv("OPENSHELL_GATEWAY")); v != "" {
 		if looksLikeURL(v) {
 			ctx.GatewayURL = v
 		} else {

@@ -27,7 +27,7 @@ type CreateArgs struct {
 
 // ParseCreate accepts the explicit provider creation form:
 //
-//	cautem provider create --name NAME --type PROFILE [--from-existing|--credential KEY]
+//	quarshell provider create --name NAME --type PROFILE [--from-existing|--credential KEY]
 func ParseCreate(args []string, lookupEnv func(string) (string, bool)) (CreateArgs, error) {
 	if lookupEnv == nil {
 		lookupEnv = os.LookupEnv

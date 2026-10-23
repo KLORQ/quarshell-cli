@@ -141,7 +141,7 @@ func TestUploadGatewayPathStreamsArchiveOverNonTTYExec(t *testing.T) {
 	if client.workspace != "team-a" || client.sandbox != "shared" || client.tty || client.timeout != timeout || !client.options.NoLoginShell {
 		t.Fatalf("exec request: workspace=%q sandbox=%q tty=%v timeout=%s options=%+v", client.workspace, client.sandbox, client.tty, client.timeout, client.options)
 	}
-	if len(client.argv) != 7 || client.argv[0] != "sh" || client.argv[1] != "-c" || client.argv[3] != "cautem-upload" || client.argv[4] != "/workspace/reports/renamed.txt" || client.argv[5] != "file" || client.argv[6] != "report file.txt" {
+	if len(client.argv) != 7 || client.argv[0] != "sh" || client.argv[1] != "-c" || client.argv[3] != "quarshell-upload" || client.argv[4] != "/workspace/reports/renamed.txt" || client.argv[5] != "file" || client.argv[6] != "report file.txt" {
 		t.Fatalf("exec argv = %#v", client.argv)
 	}
 	if !session.closed {
@@ -202,7 +202,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 	if _, err := archive.Seek(0, io.SeekStart); err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, destination), kind, base)
+	cmd := exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, destination), kind, base)
 	cmd.Dir = root
 	cmd.Stdin = archive
 	if output, err := cmd.CombinedOutput(); err != nil {
@@ -218,7 +218,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 	if _, err := archive.Seek(0, io.SeekStart); err != nil {
 		t.Fatal(err)
 	}
-	cmd = exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, existingDirectory), kind, base)
+	cmd = exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, existingDirectory), kind, base)
 	cmd.Dir, cmd.Stdin = root, archive
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("directory upload into existing directory: %v: %s", err, output)
@@ -241,7 +241,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 		t.Fatal(err)
 	}
 	target := filepath.Join(root, "renamed.txt")
-	cmd = exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, target), fileKind, fileBase)
+	cmd = exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, target), fileKind, fileBase)
 	cmd.Dir, cmd.Stdin = root, fileArchive
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("file upload script: %v: %s", err, output)
@@ -254,7 +254,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 		t.Fatal(err)
 	}
 	trailingSlashDir := filepath.Join(root, "created-by-trailing-slash") + "/"
-	cmd = exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, trailingSlashDir)+"/", fileKind, fileBase)
+	cmd = exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, trailingSlashDir)+"/", fileKind, fileBase)
 	cmd.Dir, cmd.Stdin = root, fileArchive
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("trailing slash upload: %v: %s", err, output)
@@ -270,7 +270,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 	if err := os.Mkdir(existingDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	cmd = exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, existingDir), fileKind, fileBase)
+	cmd = exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, existingDir), fileKind, fileBase)
 	cmd.Dir, cmd.Stdin = root, fileArchive
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("existing directory upload: %v: %s", err, output)
@@ -286,7 +286,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 	if err := os.Symlink("missing-target", danglingDestination); err != nil {
 		t.Fatal(err)
 	}
-	cmd = exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, danglingDestination), fileKind, fileBase)
+	cmd = exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, danglingDestination), fileKind, fileBase)
 	cmd.Dir, cmd.Stdin = root, fileArchive
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("dangling symlink upload: %v: %s", err, output)
@@ -300,7 +300,7 @@ func TestGatewayUploadScriptExtractsFilesAndChecksWorkspaceBoundary(t *testing.T
 		t.Fatal(err)
 	}
 	escapePath := shellTestPath(t, root, filepath.Join(root, "..", "outside.txt"))
-	escape := exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", escapePath, fileKind, fileBase)
+	escape := exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", escapePath, fileKind, fileBase)
 	escape.Dir, escape.Stdin = root, fileArchive
 	output, err := escape.CombinedOutput()
 	if err == nil || !strings.Contains(string(output), "escapes sandbox workspace") {
@@ -343,7 +343,7 @@ func TestGatewayUploadDirectoryPartialTransferCanBeRetried(t *testing.T) {
 		t.Fatalf("upload archive unexpectedly small: %d bytes", len(contents))
 	}
 
-	partial := exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, destination), kind, base)
+	partial := exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, destination), kind, base)
 	partial.Dir = root
 	partial.Stdin = bytes.NewReader(contents[:2048])
 	if output, err := partial.CombinedOutput(); err == nil {
@@ -356,7 +356,7 @@ func TestGatewayUploadDirectoryPartialTransferCanBeRetried(t *testing.T) {
 		t.Fatalf("partial upload was published before retry: %v", err)
 	}
 
-	retry := exec.Command("sh", "-c", gatewayUploadScript, "cautem-upload", shellTestPath(t, root, destination), kind, base)
+	retry := exec.Command("sh", "-c", gatewayUploadScript, "quarshell-upload", shellTestPath(t, root, destination), kind, base)
 	retry.Dir = root
 	retry.Stdin = bytes.NewReader(contents)
 	if output, err := retry.CombinedOutput(); err != nil {
@@ -386,7 +386,7 @@ func TestDownloadGatewayPathStreamsAndRenamesFile(t *testing.T) {
 	if client.workspace != "team-b" || client.sandbox != "shared" || client.timeout != timeout || !client.options.NoLoginShell {
 		t.Fatalf("exec request workspace=%q sandbox=%q timeout=%s options=%+v", client.workspace, client.sandbox, client.timeout, client.options)
 	}
-	if len(client.argv) != 5 || client.argv[0] != "sh" || client.argv[1] != "-c" || client.argv[3] != "cautem-download" || client.argv[4] != "/workspace/reports/report.txt" {
+	if len(client.argv) != 5 || client.argv[0] != "sh" || client.argv[1] != "-c" || client.argv[3] != "quarshell-download" || client.argv[4] != "/workspace/reports/report.txt" {
 		t.Fatalf("exec argv=%#v", client.argv)
 	}
 	got, err := os.ReadFile(destination)
@@ -483,7 +483,7 @@ func TestGatewayDownloadScriptRejectsSourceOutsideWorkspace(t *testing.T) {
 	if err := os.WriteFile(outside, []byte("secret"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	cmd := exec.Command("sh", "-c", gatewayDownloadScript, "cautem-download", shellTestPath(t, root, outside))
+	cmd := exec.Command("sh", "-c", gatewayDownloadScript, "quarshell-download", shellTestPath(t, root, outside))
 	cmd.Dir = root
 	output, err := cmd.CombinedOutput()
 	if err == nil || !strings.Contains(string(output), "escapes workspace") {
@@ -493,7 +493,7 @@ func TestGatewayDownloadScriptRejectsSourceOutsideWorkspace(t *testing.T) {
 	if err := os.Symlink(outside, link); err != nil {
 		t.Fatal(err)
 	}
-	cmd = exec.Command("sh", "-c", gatewayDownloadScript, "cautem-download", shellTestPath(t, root, link))
+	cmd = exec.Command("sh", "-c", gatewayDownloadScript, "quarshell-download", shellTestPath(t, root, link))
 	cmd.Dir = root
 	output, err = cmd.CombinedOutput()
 	if err == nil || !strings.Contains(string(output), "escapes workspace") {

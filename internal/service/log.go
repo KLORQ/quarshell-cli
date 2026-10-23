@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/KLORQ/quarshell-cli/internal/logger"
-	"github.com/KLORQ/quarshell-slogx"
+	"github.com/KLORQ/quarshell-core/slogx"
 )
 
 // opLogger returns a context logger tagged with a stable operation name

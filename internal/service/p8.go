@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/KLORQ/quarshell-cli/internal/storage/sandboxstate"
+	"github.com/KLORQ/quarshell-core/slogx"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	"github.com/KLORQ/quarshell-slogx"
 )
 
 // SandboxStop stops a sandbox without deleting network/volume.
@@ -191,7 +191,7 @@ func (a *App) copy(ctx context.Context, src, dst string) error {
 	sName, sPath, sOK := splitSandboxPath(src)
 	dName, dPath, dOK := splitSandboxPath(dst)
 	if sOK == dOK {
-		return fmt.Errorf("usage: cautem cp <local> <sandbox>:/path  OR  cautem cp <sandbox>:/path <local>")
+		return fmt.Errorf("usage: quarshell cp <local> <sandbox>:/path  OR  quarshell cp <sandbox>:/path <local>")
 	}
 	sandboxName := sName
 	if dOK {

@@ -11,12 +11,12 @@ import (
 
 func runGateway(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem gateway ensure|add|remove|select|info|list|login|logout")
+		return fmt.Errorf("usage: quarshell gateway ensure|add|remove|select|info|list|login|logout")
 	}
 	switch args[0] {
 	case "ensure":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem gateway ensure")
+			return fmt.Errorf("usage: quarshell gateway ensure")
 		}
 		return a.GatewayEnsure()
 	case "add":
@@ -27,7 +27,7 @@ func runGateway(a *service.App, args []string) error {
 		return a.GatewayAddParsed(parsed)
 	case "remove", "rm", "delete":
 		if len(args) != 2 || strings.TrimSpace(args[1]) == "" {
-			return fmt.Errorf("usage: cautem gateway remove [name]")
+			return fmt.Errorf("usage: quarshell gateway remove [name]")
 		}
 		return a.GatewayRemove(args[1])
 	case "select":
@@ -35,27 +35,27 @@ func runGateway(a *service.App, args []string) error {
 			return a.GatewayListRemote() // Selecting without a name lists registered gateways.
 		}
 		if len(args) != 2 {
-			return fmt.Errorf("usage: cautem gateway select [name]")
+			return fmt.Errorf("usage: quarshell gateway select [name]")
 		}
 		return a.GatewaySelect(args[1])
 	case "status":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem gateway status")
+			return fmt.Errorf("usage: quarshell gateway status")
 		}
 		return a.GatewayStatus()
 	case "info":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem gateway info")
+			return fmt.Errorf("usage: quarshell gateway info")
 		}
 		return a.GatewayInfo()
 	case "list", "ls":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem gateway list")
+			return fmt.Errorf("usage: quarshell gateway list")
 		}
 		return a.GatewayListRemote()
 	case "login":
 		if len(args) > 2 {
-			return fmt.Errorf("usage: cautem gateway login [token]")
+			return fmt.Errorf("usage: quarshell gateway login [token]")
 		}
 		token := ""
 		if len(args) > 1 && !strings.HasPrefix(args[1], "-") {
@@ -64,7 +64,7 @@ func runGateway(a *service.App, args []string) error {
 		return a.GatewayLoginInteractive(token)
 	case "logout":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem gateway logout")
+			return fmt.Errorf("usage: quarshell gateway logout")
 		}
 		return a.GatewayLogout()
 	default:
@@ -74,7 +74,7 @@ func runGateway(a *service.App, args []string) error {
 
 func runWorkspace(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem workspace create|get|list|delete|member …")
+		return fmt.Errorf("usage: quarshell workspace create|get|list|delete|member …")
 	}
 	switch args[0] {
 	case "create":
@@ -85,7 +85,7 @@ func runWorkspace(a *service.App, args []string) error {
 		return a.WorkspaceCreate(name, labels)
 	case "get":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem workspace get <name>")
+			return fmt.Errorf("usage: quarshell workspace get <name>")
 		}
 		if len(args) > 2 {
 			return fmt.Errorf("unexpected argument %q", args[2])
@@ -99,7 +99,7 @@ func runWorkspace(a *service.App, args []string) error {
 		return a.WorkspaceList(options)
 	case "delete", "rm":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem workspace delete <name> [name ...]")
+			return fmt.Errorf("usage: quarshell workspace delete <name> [name ...]")
 		}
 		names, err := parseWorkspaceDeleteNames(args[1:])
 		if err != nil {
@@ -113,7 +113,7 @@ func runWorkspace(a *service.App, args []string) error {
 		return nil
 	case "member":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem workspace member add|remove|list …")
+			return fmt.Errorf("usage: quarshell workspace member add|remove|list …")
 		}
 		switch args[1] {
 		case "add":
@@ -181,7 +181,7 @@ func runWorkspace(a *service.App, args []string) error {
 				ws = arg
 			}
 			if ws == "" {
-				return fmt.Errorf("usage: cautem workspace member list --workspace NAME")
+				return fmt.Errorf("usage: quarshell workspace member list --workspace NAME")
 			}
 			return a.WorkspaceMemberListPage(ws, pageSize, pageToken, output)
 		default:
@@ -226,7 +226,7 @@ func parseWorkspaceCreateArgs(args []string) (string, map[string]string, error) 
 		}
 	}
 	if strings.TrimSpace(name) == "" {
-		return "", nil, fmt.Errorf("usage: cautem workspace create --name NAME")
+		return "", nil, fmt.Errorf("usage: quarshell workspace create --name NAME")
 	}
 	labels := make(map[string]string, len(labelArgs))
 	for _, label := range labelArgs {
@@ -305,7 +305,7 @@ func parseWorkspaceOptionValue(args []string, index int, flag string) (string, i
 
 func parseWorkspaceDeleteNames(args []string) ([]string, error) {
 	if len(args) == 0 {
-		return nil, fmt.Errorf("usage: cautem workspace delete <name> [name ...]")
+		return nil, fmt.Errorf("usage: quarshell workspace delete <name> [name ...]")
 	}
 	names := make([]string, 0, len(args))
 	for _, name := range args {
@@ -376,7 +376,7 @@ func parseWorkspaceMemberFlags(args []string, needRole bool) (ws, subject, role 
 		return "", "", "", fmt.Errorf("unexpected argument %q", positionals[0])
 	}
 	if ws == "" || subject == "" {
-		return "", "", "", fmt.Errorf("usage: cautem workspace member add --workspace NAME --subject SUBJECT [--role user|admin]")
+		return "", "", "", fmt.Errorf("usage: quarshell workspace member add --workspace NAME --subject SUBJECT [--role user|admin]")
 	}
 	if needRole && role != "user" && role != "admin" {
 		return "", "", "", fmt.Errorf("--role must be user|admin")
@@ -386,7 +386,7 @@ func parseWorkspaceMemberFlags(args []string, needRole bool) (ws, subject, role 
 
 func runSettings(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem settings get|set|delete …")
+		return fmt.Errorf("usage: quarshell settings get|set|delete …")
 	}
 	switch args[0] {
 	case "get":
@@ -468,7 +468,7 @@ func runSettings(a *service.App, args []string) error {
 			}
 		}
 		if key == "" {
-			return fmt.Errorf("usage: cautem settings delete [sandbox] --key KEY [--global] [--yes]")
+			return fmt.Errorf("usage: quarshell settings delete [sandbox] --key KEY [--global] [--yes]")
 		}
 		if global && name != "" {
 			return fmt.Errorf("settings delete --global does not accept a sandbox name")

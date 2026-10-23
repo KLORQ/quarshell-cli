@@ -9,7 +9,7 @@ import (
 
 // Banner is the short CLI intro.
 func (a *App) Banner() string {
-	return "cautem — agent sandbox CLI"
+	return "quarshell — agent sandbox CLI"
 }
 
 // Version reports the CLI stub version.
@@ -17,7 +17,7 @@ func (a *App) Banner() string {
 // -ldflags "-X github.com/KLORQ/quarshell-cli/internal/service.BuildVersion=…".
 var BuildVersion = "0.1.0-alpha.1"
 
-func (a *App) Version() string { return "cautem " + BuildVersion }
+func (a *App) Version() string { return "quarshell " + BuildVersion }
 
 // Doctor checks the Docker prerequisite used by the pinned OpenShell CLI.
 func (a *App) Doctor() error {

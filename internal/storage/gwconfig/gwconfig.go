@@ -1,4 +1,4 @@
-// Package gwconfig loads multi-gateway CLI config (~/.config/cautem/config.yaml).
+// Package gwconfig loads multi-gateway CLI config (~/.config/quarshell/config.yaml).
 package gwconfig
 
 import (
@@ -39,13 +39,13 @@ type Gateway struct {
 // Path returns the default config path.
 func Path() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "cautem", "config.yaml"), nil
+		return filepath.Join(xdg, "quarshell", "config.yaml"), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "cautem", "config.yaml"), nil
+	return filepath.Join(home, ".config", "quarshell", "config.yaml"), nil
 }
 
 // Load reads config or returns empty defaults.
@@ -121,29 +121,29 @@ func ResolveImage(from, explicit string) (string, error) {
 	}
 	builtins := map[string]string{
 		"debian": defaults.ImageDebian,
-		// cautem catalog shorts (local). GHCR paths when CAUTEM_USE_GHCR=1.
-		"base":           defaults.ImageLocal,
-		"cautem/cli":     defaults.ImageLocal,
-		"cautem/gui":     defaults.ImageGUI,
-		"cautem/gpu":     defaults.ImageGPU,
-		"gui-gpu":        defaults.ImageGUIGPU,
-		"cautem/gui-gpu": defaults.ImageGUIGPU,
-		"cursor":         defaults.ImageCursor,
-		"claude":         defaults.ImageClaude,
-		"codex":          defaults.ImageCodex,
+		// quarshell catalog shorts (local). GHCR paths when QUARSHELL_USE_GHCR=1.
+		"base":              defaults.ImageLocal,
+		"quarshell/cli":     defaults.ImageLocal,
+		"quarshell/gui":     defaults.ImageGUI,
+		"quarshell/gpu":     defaults.ImageGPU,
+		"gui-gpu":           defaults.ImageGUIGPU,
+		"quarshell/gui-gpu": defaults.ImageGUIGPU,
+		"cursor":            defaults.ImageCursor,
+		"claude":            defaults.ImageClaude,
+		"codex":             defaults.ImageCodex,
 		// Opt-in NVIDIA OpenShell community interop.
 		"community/base":   "ghcr.io/nvidia/openshell-community/sandboxes/base:latest",
 		"community/ollama": "ghcr.io/nvidia/openshell-community/sandboxes/ollama:latest",
 		"ollama":           "ghcr.io/nvidia/openshell-community/sandboxes/ollama:latest",
 	}
-	// After images:pull / CI publish, set images.* in config or CAUTEM_USE_GHCR=1 for GHCR builtins.
-	if os.Getenv("CAUTEM_USE_GHCR") == "1" {
+	// After images:pull / CI publish, set images.* in config or QUARSHELL_USE_GHCR=1 for GHCR builtins.
+	if os.Getenv("QUARSHELL_USE_GHCR") == "1" {
 		builtins["base"] = defaults.ImageBaseRef
-		builtins["cautem/cli"] = defaults.ImageBaseRef
-		builtins["cautem/gui"] = defaults.ImageGUIRef
-		builtins["cautem/gpu"] = defaults.ImageGPURef
+		builtins["quarshell/cli"] = defaults.ImageBaseRef
+		builtins["quarshell/gui"] = defaults.ImageGUIRef
+		builtins["quarshell/gpu"] = defaults.ImageGPURef
 		builtins["gui-gpu"] = defaults.ImageGUIGPURef
-		builtins["cautem/gui-gpu"] = defaults.ImageGUIGPURef
+		builtins["quarshell/gui-gpu"] = defaults.ImageGUIGPURef
 		builtins["cursor"] = defaults.ImageCursorRef
 		builtins["claude"] = defaults.ImageClaudeRef
 		builtins["codex"] = defaults.ImageCodexRef

@@ -11,7 +11,7 @@ import (
 	"github.com/KLORQ/quarshell-cli/internal/app"
 	"github.com/KLORQ/quarshell-cli/internal/logger"
 	"github.com/KLORQ/quarshell-cli/internal/service"
-	"github.com/KLORQ/quarshell-slogx"
+	"github.com/KLORQ/quarshell-core/slogx"
 )
 
 func main() {

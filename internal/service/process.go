@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
+	slogx "github.com/KLORQ/quarshell-core/slogx"
 	"github.com/KLORQ/quarshell-driver/driver"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	slogx "github.com/KLORQ/quarshell-slogx"
 	"golang.org/x/term"
 )
 
-// ExecOpts for cautem sandbox exec.
+// ExecOpts for quarshell sandbox exec.
 type ExecOpts struct {
 	Name              string
 	Argv              []string
@@ -34,7 +34,7 @@ type ExecOpts struct {
 // Exec runs a command in a sandbox.
 func (a *App) Exec(opt ExecOpts) error {
 	if len(opt.Argv) == 0 {
-		return fmt.Errorf("usage: cautem sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
+		return fmt.Errorf("usage: quarshell sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
 	}
 	name, err := a.resolveSandboxTarget(opt.Name)
 	if err != nil {
@@ -44,7 +44,7 @@ func (a *App) Exec(opt ExecOpts) error {
 	const op = "cli.sandbox.exec"
 	log := a.op(op, slog.String("sandbox", opt.Name), slog.Int("argv_len", len(opt.Argv)))
 	if opt.Name == "" || len(opt.Argv) == 0 {
-		return fmt.Errorf("usage: cautem sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
+		return fmt.Errorf("usage: quarshell sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
 	}
 	log.Info("executing in sandbox", slog.Bool("tty", opt.TTY), slog.Bool("no_login_shell", opt.NoLoginShell))
 	commandCtx := a.CommandContext()
@@ -77,7 +77,7 @@ func writeExecResult(result driver.ExecResult) error {
 		}
 	}
 	if result.OutputTruncated {
-		if _, err := fmt.Fprintln(os.Stderr, "cautem: command output was truncated by the compute driver"); err != nil {
+		if _, err := fmt.Fprintln(os.Stderr, "quarshell: command output was truncated by the compute driver"); err != nil {
 			return fmt.Errorf("write command truncation notice: %w", err)
 		}
 	}

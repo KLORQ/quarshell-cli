@@ -17,7 +17,7 @@ import (
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
 )
 
-var errNoCurrentGateway = errors.New("no current gateway; run: cautem gateway add|select")
+var errNoCurrentGateway = errors.New("no current gateway; run: quarshell gateway add|select")
 
 // ApplyGlobal stores OpenShell-style global flags for this CLI session.
 func (a *App) ApplyGlobal(g global.Context) {
@@ -38,12 +38,12 @@ func looksLikeGatewayURL(s string) bool {
 }
 
 // currentGatewayURL resolves the active gateway endpoint.
-// Order: App URL override, OPENSHELL_GATEWAY/CAUTEM_GATEWAY_URL, -g name, config current.
+// Order: App URL override, OPENSHELL_GATEWAY/QUARSHELL_GATEWAY_URL, -g name, config current.
 func (a *App) currentGatewayURL() (string, error) {
 	if a != nil && a.GatewayURLOverride != "" {
 		return strings.TrimRight(a.GatewayURLOverride, "/"), nil
 	}
-	if v := firstNonEmptyEnv("OPENSHELL_GATEWAY", "CAUTEM_GATEWAY_URL"); v != "" {
+	if v := firstNonEmptyEnv("OPENSHELL_GATEWAY", "QUARSHELL_GATEWAY_URL"); v != "" {
 		if looksLikeGatewayURL(v) {
 			return strings.TrimRight(v, "/"), nil
 		}
@@ -54,7 +54,7 @@ func (a *App) currentGatewayURL() (string, error) {
 		if g, ok := cfg.Gateways[v]; ok && g.URL != "" {
 			return strings.TrimRight(g.URL, "/"), nil
 		}
-		return "", fmt.Errorf("gateway %q from env not in config (cautem gateway add)", v)
+		return "", fmt.Errorf("gateway %q from env not in config (quarshell gateway add)", v)
 	}
 	if a != nil && a.GatewayNameOverride != "" {
 		cfg, _, err := gwconfig.Load()
@@ -92,7 +92,7 @@ func (a *App) GatewayTUIConfig() (url, workspace, token string, ok bool, err err
 }
 
 // gatewayTokenForURL resolves the bearer for a gateway URL:
-// $CAUTEM_GATEWAY_TOKEN, then the config token, then the gateway's
+// $QUARSHELL_GATEWAY_TOKEN, then the config token, then the gateway's
 // owner-only <data_dir>/auth_token (local gateways started by this CLI).
 func (a *App) gatewayTokenForURL(url string) string {
 	if v := strings.TrimSpace(os.Getenv(klorq.EnvToken)); v != "" {
@@ -111,7 +111,7 @@ func (a *App) gatewayTokenForURL(url string) string {
 			}
 			if token, refreshed, refreshErr := a.refreshGatewayToken(cfg, name, g); refreshed {
 				if refreshErr != nil {
-					slog.Warn("gateway OIDC token refresh failed; run cautem gateway login", "gateway", name)
+					slog.Warn("gateway OIDC token refresh failed; run quarshell gateway login", "gateway", name)
 					return g.Token
 				}
 				return token
@@ -199,13 +199,13 @@ func isLocalGatewayURL(u string) bool {
 // defaultGatewayDataDir mirrors quarshell-gateway's default --data-dir.
 func defaultGatewayDataDir() string {
 	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
-		return filepath.Join(xdg, "cautem", "gateway")
+		return filepath.Join(xdg, "quarshell", "gateway")
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return filepath.Join(os.TempDir(), "quarshell-gateway")
 	}
-	return filepath.Join(home, ".local", "state", "cautem", "gateway")
+	return filepath.Join(home, ".local", "state", "quarshell", "gateway")
 }
 
 // clientFor returns an authenticated client for a gateway URL.
@@ -269,7 +269,7 @@ func (a *App) gatewayClient() (*klorq.Client, error) {
 		return nil, err
 	}
 	if u == "" {
-		return nil, fmt.Errorf("no gateway selected (cautem gateway ensure|add|select)")
+		return nil, fmt.Errorf("no gateway selected (quarshell gateway ensure|add|select)")
 	}
 	return a.clientFor(u), nil
 }

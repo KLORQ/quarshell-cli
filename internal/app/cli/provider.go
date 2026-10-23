@@ -12,7 +12,7 @@ import (
 
 func runProvider(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem provider create --name NAME --type PROFILE [--from-existing|--credential KEY]")
+		return fmt.Errorf("usage: quarshell provider create --name NAME --type PROFILE [--from-existing|--credential KEY]")
 	}
 	switch args[0] {
 	case "list-profiles":
@@ -30,7 +30,7 @@ func runProvider(a *service.App, args []string) error {
 		return a.ProviderProfileListPage(scope, workspace, 100, "", "table")
 	case "profile":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem provider profile list|show|import|export|delete|lint …")
+			return fmt.Errorf("usage: quarshell provider profile list|show|import|export|delete|lint …")
 		}
 		rest, scope, workspace, err := parseProfileScope(a, args[2:])
 		if err != nil {
@@ -49,7 +49,7 @@ func runProvider(a *service.App, args []string) error {
 				return err
 			}
 			if id == "" {
-				return fmt.Errorf("usage: cautem provider profile export <id> [-o yaml|json]")
+				return fmt.Errorf("usage: quarshell provider profile export <id> [-o yaml|json]")
 			}
 			return a.ProviderProfileShowFmt(id, outFmt, scope, workspace)
 		case "import":
@@ -58,7 +58,7 @@ func runProvider(a *service.App, args []string) error {
 				return err
 			}
 			if path == "" {
-				return fmt.Errorf("usage: cautem provider profile import -f <file.yaml>")
+				return fmt.Errorf("usage: quarshell provider profile import -f <file.yaml>")
 			}
 			return a.ProviderProfileImport(path, scope, workspace)
 		case "update":
@@ -67,15 +67,15 @@ func runProvider(a *service.App, args []string) error {
 				return err
 			}
 			if path == "" {
-				return fmt.Errorf("usage: cautem provider profile update -f <file.yaml>")
+				return fmt.Errorf("usage: quarshell provider profile update -f <file.yaml>")
 			}
 			return a.ProviderProfileUpdate(path, scope, workspace)
 		case "delete":
 			if len(args) < 3 {
-				return fmt.Errorf("usage: cautem provider profile delete <id>")
+				return fmt.Errorf("usage: quarshell provider profile delete <id>")
 			}
 			if len(rest) != 1 {
-				return fmt.Errorf("usage: cautem profile delete <id> [--workspace NAME|--global]")
+				return fmt.Errorf("usage: quarshell profile delete <id> [--workspace NAME|--global]")
 			}
 			return a.ProviderProfileDelete(rest[0], scope, workspace)
 		case "lint":
@@ -84,7 +84,7 @@ func runProvider(a *service.App, args []string) error {
 				return err
 			}
 			if path == "" {
-				return fmt.Errorf("usage: cautem provider profile lint -f <file.yaml>")
+				return fmt.Errorf("usage: quarshell provider profile lint -f <file.yaml>")
 			}
 			return a.ProviderProfileLint(path)
 		default:
@@ -104,7 +104,7 @@ func runProvider(a *service.App, args []string) error {
 		return a.ProviderCreate(parsed)
 	case "update":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem provider update <name> [--from-existing|--credential KEY[=VALUE]]")
+			return fmt.Errorf("usage: quarshell provider update <name> [--from-existing|--credential KEY[=VALUE]]")
 		}
 		name := args[1]
 		fromExisting := false
@@ -137,27 +137,27 @@ func runProvider(a *service.App, args []string) error {
 		return a.ProviderUpdate(name, fromExisting, credentials)
 	case "get":
 		if len(args) != 2 {
-			return fmt.Errorf("usage: cautem provider get <name>")
+			return fmt.Errorf("usage: quarshell provider get <name>")
 		}
 		return a.ProviderGet(args[1])
 	case "delete", "rm":
 		if len(args) != 2 {
-			return fmt.Errorf("usage: cautem provider delete <name>")
+			return fmt.Errorf("usage: quarshell provider delete <name>")
 		}
 		return a.ProviderDelete(args[1])
 	case "refresh":
 		if len(args) < 2 {
-			return fmt.Errorf("usage: cautem provider refresh <name>|status|configure|rotate|delete …")
+			return fmt.Errorf("usage: quarshell provider refresh <name>|status|configure|rotate|delete …")
 		}
 		switch args[1] {
 		case "status":
 			if len(args) != 3 {
-				return fmt.Errorf("usage: cautem provider refresh status <name>")
+				return fmt.Errorf("usage: quarshell provider refresh status <name>")
 			}
 			return a.ProviderRefreshStatus(args[2])
 		case "configure":
 			if len(args) < 3 {
-				return fmt.Errorf("usage: cautem provider refresh configure <name> --credential-key K --strategy S")
+				return fmt.Errorf("usage: quarshell provider refresh configure <name> --credential-key K --strategy S")
 			}
 			opt, err := providerflags.ParseRefreshConfigure(args[2], args[3:])
 			if err != nil {
@@ -166,7 +166,7 @@ func runProvider(a *service.App, args []string) error {
 			return a.ProviderRefreshConfigure(opt)
 		case "rotate":
 			if len(args) < 3 {
-				return fmt.Errorf("usage: cautem provider refresh rotate <name> --credential-key K")
+				return fmt.Errorf("usage: quarshell provider refresh rotate <name> --credential-key K")
 			}
 			key, err := providerflags.ParseRefreshKey(args[2], args[3:])
 			if err != nil {
@@ -175,7 +175,7 @@ func runProvider(a *service.App, args []string) error {
 			return a.ProviderRefreshRotate(args[2], key)
 		case "delete":
 			if len(args) < 3 {
-				return fmt.Errorf("usage: cautem provider refresh delete <name> --credential-key K")
+				return fmt.Errorf("usage: quarshell provider refresh delete <name> --credential-key K")
 			}
 			key, err := providerflags.ParseRefreshKey(args[2], args[3:])
 			if err != nil {
@@ -184,7 +184,7 @@ func runProvider(a *service.App, args []string) error {
 			return a.ProviderRefreshDelete(args[2], key)
 		default:
 			if len(args) != 2 {
-				return fmt.Errorf("usage: cautem provider refresh <name>")
+				return fmt.Errorf("usage: quarshell provider refresh <name>")
 			}
 			return a.ProviderRefresh(args[1])
 		}
@@ -239,7 +239,7 @@ func runProvider(a *service.App, args []string) error {
 		return a.ProviderListPage(pageSize, pageToken, selector, output, allWorkspaces)
 	case "effective":
 		if len(args) != 2 {
-			return fmt.Errorf("usage: cautem provider effective <sandbox>")
+			return fmt.Errorf("usage: quarshell provider effective <sandbox>")
 		}
 		return a.ProviderEffective(args[1])
 	default:

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/KLORQ/quarshell-core/policy"
-	"github.com/KLORQ/quarshell-providers/provider"
+	"github.com/KLORQ/quarshell-policy/corepolicy"
+	"github.com/KLORQ/quarshell-policy/provider"
 	"github.com/KLORQ/quarshell-proxy/proxy"
 )
 
@@ -79,7 +79,7 @@ endpoints:
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Header.Set("Authorization", "Bearer cautem:resolve:env:OPENAI_API_KEY")
+	req.Header.Set("Authorization", "Bearer quarshell:resolve:env:OPENAI_API_KEY")
 	bound, err := proxy.SecretsForEndpoint(secrets, rules[0].CredentialKeys, proxy.PlaceholderKeysInRequest(req))
 	if err != nil {
 		t.Fatal(err)
@@ -97,7 +97,7 @@ endpoints:
 	}
 
 	wrongEndpoint, _ := http.NewRequest(http.MethodGet, server.URL+"/v1/models", nil)
-	wrongEndpoint.Header.Set("Authorization", "Bearer cautem:resolve:env:GH_TOKEN")
+	wrongEndpoint.Header.Set("Authorization", "Bearer quarshell:resolve:env:GH_TOKEN")
 	if _, err := proxy.SecretsForEndpoint(secrets, rules[0].CredentialKeys, proxy.PlaceholderKeysInRequest(wrongEndpoint)); !errors.Is(err, proxy.ErrCredentialEndpointMismatch) {
 		t.Fatalf("wrong endpoint credential binding error = %v", err)
 	}

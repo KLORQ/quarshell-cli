@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/KLORQ/quarshell-core/engine"
+	"github.com/KLORQ/quarshell-policy/engine"
 	"github.com/KLORQ/quarshell-proxy/proxy"
 )
 

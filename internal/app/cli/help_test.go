@@ -9,7 +9,7 @@ import (
 
 func TestHelpNested(t *testing.T) {
 	root := helpText(nil)
-	if root == "" || !strings.Contains(root, "cautem") {
+	if root == "" || !strings.Contains(root, "quarshell") {
 		t.Fatal("root help empty")
 	}
 	if strings.Contains(root, "OpenShell") || strings.Contains(root, "OPENSHELL_") {
@@ -83,9 +83,9 @@ func TestPublicSandboxLeavesHaveSpecificHelp(t *testing.T) {
 		}},
 		{path: []string{"sandbox", "exec"}, want: []string{"-n", "--name", "--workdir", "--timeout", "--tty", "--no-tty", "--no-login-shell", "--env"}},
 		{path: []string{"sandbox", "list"}, want: []string{"--page-size", "--page-token", "--selector", "-o", "--output", "--ids", "--names", "--all-workspaces"}},
-		{path: []string{"sandbox", "get"}, want: []string{"cautem sandbox get NAME"}},
-		{path: []string{"sandbox", "start"}, want: []string{"cautem sandbox start [NAME]"}},
-		{path: []string{"sandbox", "stop"}, want: []string{"cautem sandbox stop [NAME]"}},
+		{path: []string{"sandbox", "get"}, want: []string{"quarshell sandbox get NAME"}},
+		{path: []string{"sandbox", "start"}, want: []string{"quarshell sandbox start [NAME]"}},
+		{path: []string{"sandbox", "stop"}, want: []string{"quarshell sandbox stop [NAME]"}},
 		{path: []string{"sandbox", "delete"}, want: []string{"NAME...", "--all", "rm", "remove"}},
 		{path: []string{"sandbox", "upload"}, want: []string{"LOCAL_PATH", "SANDBOX_DEST", "--no-git-ignore"}},
 		{path: []string{"sandbox", "download"}, want: []string{"SANDBOX_PATH", "LOCAL_DEST"}},
@@ -159,7 +159,7 @@ func TestSSHProxyHelpDocumentsSupportedInvocationShapes(t *testing.T) {
 		"--gateway URL --sandbox-id ID --token TOKEN",
 		"--gateway-name NAME --name SANDBOX",
 		"--server URL --name SANDBOX",
-		"cautem ssh-proxy SANDBOX",
+		"quarshell ssh-proxy SANDBOX",
 	} {
 		if !strings.Contains(help, invocation) {
 			t.Errorf("ssh-proxy help is missing %q: %s", invocation, help)
@@ -174,9 +174,9 @@ func TestSandboxCreateRejectsRemovedNoOpSSHFlag(t *testing.T) {
 	}
 }
 
-func TestCompletionsUsecautemFunctionName(t *testing.T) {
+func TestCompletionsUsequarshellFunctionName(t *testing.T) {
 	for _, script := range []string{completionsBash, completionsZsh} {
-		if strings.Contains(script, "_osg") || !strings.Contains(script, "_cautem") {
+		if strings.Contains(script, "_osg") || !strings.Contains(script, "_quarshell") {
 			t.Fatalf("completion function name is stale: %q", script)
 		}
 	}

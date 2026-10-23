@@ -30,7 +30,7 @@ func uploadGatewayPath(ctx context.Context, client gatewayExecClient, workspace,
 	if _, err := archive.Seek(0, io.SeekStart); err != nil {
 		return fmt.Errorf("rewind upload archive: %w", err)
 	}
-	argv := []string{"sh", "-c", gatewayUploadScript, "cautem-upload", destination, kind, base}
+	argv := []string{"sh", "-c", gatewayUploadScript, "quarshell-upload", destination, kind, base}
 	session, err := client.ExecInteractiveWithTTYTimeout(ctx, workspace, sandbox, argv, false, 0, 0, timeout, klorq.SandboxExecOptions{NoLoginShell: true})
 	if err != nil {
 		return fmt.Errorf("start Gateway upload to sandbox %q: %w", sandbox, err)
@@ -90,7 +90,7 @@ func makeUploadArchive(source string) (*os.File, string, string, error) {
 	} else if !info.Mode().IsRegular() && info.Mode()&os.ModeSymlink == 0 {
 		return nil, "", "", fmt.Errorf("unsupported upload entry type %s", info.Mode().Type())
 	}
-	archive, err := os.CreateTemp("", "cautem-transfer-*.tar")
+	archive, err := os.CreateTemp("", "quarshell-transfer-*.tar")
 	if err != nil {
 		return nil, "", "", fmt.Errorf("create upload archive: %w", err)
 	}
@@ -188,7 +188,7 @@ if [ "$kind" = directory ] || [ "$kind" = contents ]; then
   fi
   resolved=$(realpath "$candidate")
   check_workspace_path "$resolved"
-  tmp=$(mktemp -d "$root/.cautem-upload.XXXXXX")
+  tmp=$(mktemp -d "$root/.quarshell-upload.XXXXXX")
   trap 'rm -rf -- "$tmp"' EXIT HUP INT TERM
   tar -xf - -C "$tmp"
   cp -a "$tmp/." "$resolved/"
@@ -238,7 +238,7 @@ if [ "$is_dir" = 0 ]; then
     echo "upload destination changed type before extraction" >&2; exit 1
   fi
 fi
-tmp=$(mktemp -d "$root/.cautem-upload.XXXXXX")
+tmp=$(mktemp -d "$root/.quarshell-upload.XXXXXX")
 trap 'rm -rf -- "$tmp"' EXIT HUP INT TERM
 tar -xf - -C "$tmp"
 mv -f -- "$tmp/$base" "$target"
@@ -292,7 +292,7 @@ func downloadGatewayPath(ctx context.Context, client gatewayExecClient, workspac
 	if err := os.MkdirAll(parent, 0o755); err != nil {
 		return fmt.Errorf("create local download parent %q: %w", parent, err)
 	}
-	staging, err := os.MkdirTemp(parent, ".cautem-download-*")
+	staging, err := os.MkdirTemp(parent, ".quarshell-download-*")
 	if err != nil {
 		return fmt.Errorf("create local download staging directory: %w", err)
 	}
@@ -316,7 +316,7 @@ func downloadGatewayPath(ctx context.Context, client gatewayExecClient, workspac
 }
 
 func captureGatewayDownloadArchive(ctx context.Context, client gatewayExecClient, workspace, sandbox, source string, timeout time.Duration) (*os.File, error) {
-	archive, err := os.CreateTemp("", "cautem-download-*.tar")
+	archive, err := os.CreateTemp("", "quarshell-download-*.tar")
 	if err != nil {
 		return nil, fmt.Errorf("create Gateway download archive: %w", err)
 	}
@@ -327,7 +327,7 @@ func captureGatewayDownloadArchive(ctx context.Context, client gatewayExecClient
 			_ = os.Remove(archive.Name())
 		}
 	}()
-	argv := []string{"sh", "-c", gatewayDownloadScript, "cautem-download", source}
+	argv := []string{"sh", "-c", gatewayDownloadScript, "quarshell-download", source}
 	stream, err := client.ExecStreamingWithTimeout(ctx, workspace, sandbox, argv, timeout, klorq.SandboxExecOptions{NoLoginShell: true})
 	if err != nil {
 		return nil, fmt.Errorf("start Gateway download from sandbox %q: %w", sandbox, err)

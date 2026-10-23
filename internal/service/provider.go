@@ -10,14 +10,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/KLORQ/quarshell-cli/internal/outfmt"
 	"github.com/KLORQ/quarshell-cli/internal/providerflags"
 	"github.com/KLORQ/quarshell-cli/internal/storage/gwconfig"
 	"github.com/KLORQ/quarshell-core/env"
-	"github.com/KLORQ/quarshell-core/policy"
-	"github.com/KLORQ/quarshell-providers/provider"
+	"github.com/KLORQ/quarshell-policy/provider"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
 	"gopkg.in/yaml.v3"
 )
@@ -328,9 +326,9 @@ func (a *App) ProviderCreate(args providerflags.CreateArgs) error {
 			tok = strings.TrimSpace(cfg.Gateways[cfg.Current].Token)
 		}
 		if tok == "" {
-			return fmt.Errorf("provider create --from-oidc-token: no gateway token (run: cautem gateway login)")
+			return fmt.Errorf("provider create --from-oidc-token: no gateway token (run: quarshell gateway login)")
 		}
-		key := "CAUTEM_GATEWAY_TOKEN"
+		key := "QUARSHELL_GATEWAY_TOKEN"
 		if len(envVars) > 0 {
 			key = envVars[0]
 		}
@@ -515,58 +513,6 @@ func (a *App) ProviderUpdate(name string, fromExisting bool, credentials map[str
 
 // prepareProviders resolves --provider flags: discover host env, ensure gateway
 // instances, compose profile endpoints into the create-time policy (OpenShell-like).
-func (a *App) prepareProviders(base policy.Document, basePath string, names []string, gwURL string) (attached []string, doc policy.Document, policyPath string, err error) {
-	doc = base
-	policyPath = basePath
-	if len(names) == 0 {
-		return nil, doc, policyPath, nil
-	}
-	var layers []provider.Layer
-	for _, raw := range names {
-		name := strings.TrimSpace(raw)
-		if name == "" {
-			continue
-		}
-		prof, envKeys, instName, err := a.resolveProviderForCreate(name, gwURL)
-		if err != nil {
-			return nil, base, basePath, err
-		}
-		layers = append(layers, provider.Layer{
-			InstanceName: instName,
-			Profile:      prof,
-			EnvVars:      envKeys,
-		})
-		attached = append(attached, instName)
-		fmt.Printf("provider: %s (type=%s env=%v)\n", instName, prof.ID, envKeys)
-	}
-	doc, err = provider.EffectivePolicy(base, layers, false)
-	if err != nil {
-		return nil, base, basePath, fmt.Errorf("provider compose: %w", err)
-	}
-	b, err := yaml.Marshal(doc)
-	if err != nil {
-		return nil, base, basePath, err
-	}
-	dir, err := os.UserCacheDir()
-	if err != nil {
-		dir = os.TempDir()
-	}
-	outDir := filepath.Join(dir, "cautem", "composed-policy")
-	if err := os.MkdirAll(outDir, 0o700); err != nil {
-		return nil, base, basePath, err
-	}
-	out := filepath.Join(outDir, fmt.Sprintf("%d.yaml", time.Now().UnixNano()))
-	if err := os.WriteFile(out, b, 0o600); err != nil {
-		return nil, base, basePath, err
-	}
-	return attached, doc, out, nil
-}
-
-func (a *App) resolveProviderForCreate(name, gwURL string) (provider.Profile, []string, string, error) {
-	_, workspace := a.profileScope()
-	return a.resolveProviderForCreateInWorkspace(name, gwURL, workspace)
-}
-
 func (a *App) resolveProviderForCreateInWorkspace(name, gwURL, workspace string) (provider.Profile, []string, string, error) {
 	// Prefer an existing gateway instance selected with --provider <instance>.
 	if gwURL != "" {
@@ -602,7 +548,7 @@ func (a *App) resolveProviderForCreateInWorkspace(name, gwURL, workspace string)
 	if err != nil {
 		hint := ""
 		if gwURL != "" {
-			hint = fmt.Sprintf(" (no gateway instance %q; create with: cautem provider create --name %s --type <profile> — or use --provider <profile-id>)", name, name)
+			hint = fmt.Sprintf(" (no gateway instance %q; create with: quarshell provider create --name %s --type <profile> — or use --provider <profile-id>)", name, name)
 		}
 		return provider.Profile{}, nil, "", fmt.Errorf("provider %q: not a gateway instance or builtin profile%s: %w", name, hint, err)
 	}
@@ -643,11 +589,6 @@ func loadBuiltinProfile(idOrPath string) (provider.Profile, error) {
 
 // loadProfile resolves imported profiles from the selected gateway first, then
 // falls back to local builtin profiles for backward compatibility.
-func (a *App) loadProfile(id, gatewayURL string) (provider.Profile, error) {
-	_, workspace := a.profileScope()
-	return a.loadProfileInWorkspace(id, gatewayURL, workspace)
-}
-
 func (a *App) loadProfileInWorkspace(id, gatewayURL, workspace string) (provider.Profile, error) {
 	if gatewayURL != "" && !strings.Contains(id, "/") && !strings.HasSuffix(id, ".yaml") && !strings.HasSuffix(id, ".yml") {
 		scope := "global"

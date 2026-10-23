@@ -1,4 +1,4 @@
-Register-ArgumentCompleter -CommandName cautem -ScriptBlock {
+Register-ArgumentCompleter -CommandName quarshell -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $elements = $commandAst.CommandElements

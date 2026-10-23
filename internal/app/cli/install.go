@@ -13,7 +13,7 @@ func runInstall(a *service.App, args []string) error {
 		case "--force":
 			opt.Force = true
 		default:
-			return fmt.Errorf("unknown flag %q (usage: cautem install [--force])", args[i])
+			return fmt.Errorf("unknown flag %q (usage: quarshell install [--force])", args[i])
 		}
 	}
 	return a.Install(opt)

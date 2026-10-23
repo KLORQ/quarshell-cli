@@ -1,4 +1,4 @@
-// Package logger wraps slogx for the cautem CLI process.
+// Package logger wraps slogx for the quarshell CLI process.
 package logger
 
 import (
@@ -8,12 +8,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/KLORQ/quarshell-slogx"
+	"github.com/KLORQ/quarshell-core/slogx"
 )
 
 const (
-	EnvLogLevel  = "CAUTEM_LOG_LEVEL"
-	EnvLogFormat = "CAUTEM_LOG_FORMAT"
+	EnvLogLevel  = "QUARSHELL_LOG_LEVEL"
+	EnvLogFormat = "QUARSHELL_LOG_FORMAT"
 )
 
 // Options tweak Setup.

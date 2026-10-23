@@ -12,17 +12,6 @@ import (
 	"strings"
 )
 
-type launchdPlist struct {
-	XMLName xml.Name `xml:"plist"`
-	Version string   `xml:"version,attr"`
-	Dict    launchdDict
-}
-
-type launchdDict struct {
-	XMLName xml.Name `xml:"dict"`
-	Items   []any
-}
-
 func startGatewayService(bin string, args, env []string, dataDir, logPath string) (bool, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {

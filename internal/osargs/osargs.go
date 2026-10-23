@@ -19,7 +19,7 @@ type SandboxDelete struct {
 // ParseSandboxTarget parses commands that accept one optional sandbox name.
 func ParseSandboxTarget(args []string, command string) (string, error) {
 	if len(args) > 1 {
-		return "", fmt.Errorf("usage: cautem sandbox %s [name]", command)
+		return "", fmt.Errorf("usage: quarshell sandbox %s [name]", command)
 	}
 	if len(args) == 1 {
 		if args[0] == "" || strings.HasPrefix(args[0], "-") {
@@ -50,7 +50,7 @@ func ParseSandboxDelete(args []string) (SandboxDelete, error) {
 		out.Names = append(out.Names, arg)
 	}
 	if len(out.Names) == 0 && !out.All {
-		return SandboxDelete{}, fmt.Errorf("usage: cautem sandbox delete <name>... | --all")
+		return SandboxDelete{}, fmt.Errorf("usage: quarshell sandbox delete <name>... | --all")
 	}
 	return out, nil
 }
@@ -75,10 +75,10 @@ type GatewayAdd struct {
 //	  [--oidc-issuer URL] [--oidc-client-id ID] [--oidc-audience AUD] [--oidc-scopes S]
 func ParseGatewayAdd(args []string) (GatewayAdd, error) {
 	if len(args) == 0 {
-		return GatewayAdd{}, fmt.Errorf("usage: cautem gateway add <endpoint> [--name NAME] [--local] [--oidc-issuer URL]")
+		return GatewayAdd{}, fmt.Errorf("usage: quarshell gateway add <endpoint> [--name NAME] [--local] [--oidc-issuer URL]")
 	}
 	if !looksLikeEndpoint(args[0]) {
-		return GatewayAdd{}, fmt.Errorf("usage: cautem gateway add <endpoint> [--name NAME] [--local]")
+		return GatewayAdd{}, fmt.Errorf("usage: quarshell gateway add <endpoint> [--name NAME] [--local]")
 	}
 	out := GatewayAdd{Endpoint: args[0]}
 	for i := 1; i < len(args); i++ {
@@ -191,10 +191,10 @@ func ParsePolicySet(args []string) (PolicySet, error) {
 		}
 	}
 	if out.Path == "" {
-		return PolicySet{}, fmt.Errorf("usage: cautem policy set [name] --policy <path> [--wait] [--global]")
+		return PolicySet{}, fmt.Errorf("usage: quarshell policy set [name] --policy <path> [--wait] [--global]")
 	}
 	if !out.Global && out.Name == "" {
-		return PolicySet{}, fmt.Errorf("usage: cautem policy set <name> --policy <path> [--wait]")
+		return PolicySet{}, fmt.Errorf("usage: quarshell policy set <name> --policy <path> [--wait]")
 	}
 	return out, nil
 }
@@ -239,7 +239,7 @@ func ParsePolicyGet(args []string) (PolicyGet, error) {
 		}
 	}
 	if !out.Global && out.Name == "" {
-		return PolicyGet{}, fmt.Errorf("usage: cautem policy get <name> [--full|--base] [--rev N]")
+		return PolicyGet{}, fmt.Errorf("usage: quarshell policy get <name> [--full|--base] [--rev N]")
 	}
 	return out, nil
 }
@@ -254,7 +254,7 @@ type ForwardStart struct {
 // ParseForwardStart parses args after "start".
 func ParseForwardStart(args []string) (ForwardStart, error) {
 	if len(args) == 0 {
-		return ForwardStart{}, fmt.Errorf("usage: cautem forward start <port> [sandbox] [-d]")
+		return ForwardStart{}, fmt.Errorf("usage: quarshell forward start <port> [sandbox] [-d]")
 	}
 	out := ForwardStart{Port: args[0]}
 	for i := 1; i < len(args); i++ {
@@ -283,7 +283,7 @@ type ForwardStop struct {
 // ParseForwardStop parses args after "stop".
 func ParseForwardStop(args []string) (ForwardStop, error) {
 	if len(args) == 0 {
-		return ForwardStop{}, fmt.Errorf("usage: cautem forward stop <port> [sandbox]")
+		return ForwardStop{}, fmt.Errorf("usage: quarshell forward stop <port> [sandbox]")
 	}
 	out := ForwardStop{Port: args[0]}
 	if len(args) > 1 {
@@ -303,7 +303,7 @@ type ServiceExpose struct {
 // ParseServiceExpose parses args after "expose".
 func ParseServiceExpose(args []string) (ServiceExpose, error) {
 	if len(args) < 2 {
-		return ServiceExpose{}, fmt.Errorf("usage: cautem service expose <sandbox> <target-port> [service]")
+		return ServiceExpose{}, fmt.Errorf("usage: quarshell service expose <sandbox> <target-port> [service]")
 	}
 	out := ServiceExpose{Sandbox: args[0], Port: args[1], AuthorizationMode: "strip"}
 	seenAuthorizationMode := false
@@ -332,7 +332,7 @@ func ParseServiceExpose(args []string) (ServiceExpose, error) {
 				return ServiceExpose{}, fmt.Errorf("unknown service expose flag %q", args[i])
 			}
 			if out.Service != "" {
-				return ServiceExpose{}, fmt.Errorf("usage: cautem service expose <sandbox> <target-port> [service] [--authorization-mode strip|bearer-passthrough]")
+				return ServiceExpose{}, fmt.Errorf("usage: quarshell service expose <sandbox> <target-port> [service] [--authorization-mode strip|bearer-passthrough]")
 			}
 			out.Service = args[i]
 		}
@@ -404,7 +404,7 @@ func ParseSettingsSet(args []string) (SettingsSet, error) {
 		}
 	}
 	if !seenKey || !seenValue || out.Key == "" {
-		return SettingsSet{}, fmt.Errorf("usage: cautem settings set [sandbox] --key KEY --value VALUE [--global] [--yes]")
+		return SettingsSet{}, fmt.Errorf("usage: quarshell settings set [sandbox] --key KEY --value VALUE [--global] [--yes]")
 	}
 	return out, nil
 }
@@ -433,7 +433,7 @@ func ParseSandboxTransfer(args []string) (SandboxTransfer, error) {
 		}
 	}
 	if len(positional) < 2 || len(positional) > 3 {
-		return SandboxTransfer{}, fmt.Errorf("usage: cautem sandbox upload|download <name> <path> [dest] [--no-git-ignore]")
+		return SandboxTransfer{}, fmt.Errorf("usage: quarshell sandbox upload|download <name> <path> [dest] [--no-git-ignore]")
 	}
 	out.Name, out.Path = positional[0], positional[1]
 	if len(positional) > 2 {
@@ -595,7 +595,7 @@ func ParseSandboxExec(args []string) (SandboxExec, error) {
 		}
 	}
 	if len(out.Argv) == 0 {
-		return SandboxExec{}, fmt.Errorf("usage: cautem sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
+		return SandboxExec{}, fmt.Errorf("usage: quarshell sandbox exec [name] [--workdir DIR] [--env K=V] -- CMD")
 	}
 	return out, nil
 }

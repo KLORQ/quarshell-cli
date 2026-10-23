@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Manual nightly multi-arch binaries → GitHub Release tag `nightly`.
@@ -30,87 +30,48 @@ jobs:
           path: quarshell-cli
           fetch-depth: 0
 
-      - name: Checkout sibling modules
-        run: |
-          set -euo pipefail
-          declare -A REMOTES=(
-            [quarshell-core]=KLORQ/quarshell-core
-            [quarshell-display]=KLORQ/quarshell-display
-            [quarshell-driver]=KLORQ/quarshell-driver
-            [quarshell-providers]=KLORQ/quarshell-providers
-            [quarshell-proxy]=KLORQ/quarshell-proxy
-            [quarshell-runtime]=KLORQ/quarshell-runtime
-            [quarshell-sdk]=KLORQ/quarshell-sdk
-            [quarshell-gateway]=KLORQ/quarshell-gateway
-            [quarshell-proto]=KLORQ/quarshell-proto
-            [quarshell-slogx]=KLORQ/quarshell-slogx
-          )
-          for local in \
-            quarshell-core quarshell-display quarshell-driver \
-            quarshell-providers quarshell-proxy quarshell-runtime \
-            quarshell-sdk quarshell-gateway quarshell-proto quarshell-slogx
-          do
-            remote="${REMOTES[$local]}"
-            if ! git clone --depth 1 --branch main \
-              "https://github.com/${remote}.git" "${local}"; then
-              git clone --depth 1 "https://github.com/${remote}.git" "${local}"
-            fi
-          done
-
       - name: Checkout quarshell-core workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-core
-          ref: v0.4.2
+          ref: v0.5.0
           path: quarshell-core
-      - name: Checkout quarshell-display workspace dependency
-        uses: actions/checkout@v4
-        with:
-          repository: KLORQ/quarshell-display
-          ref: v0.1.1
-          path: quarshell-display
       - name: Checkout quarshell-driver workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.1.1
+          ref: v0.2.0
           path: quarshell-driver
       - name: Checkout quarshell-proto workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.2
+          ref: v0.2.3
           path: quarshell-proto
-      - name: Checkout quarshell-providers workspace dependency
+      - name: Checkout quarshell-policy workspace dependency
         uses: actions/checkout@v4
         with:
-          repository: KLORQ/quarshell-providers
-          ref: v0.1.1
-          path: quarshell-providers
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.0
+          path: quarshell-policy
       - name: Checkout quarshell-proxy workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proxy
-          ref: v0.1.1
+          ref: v0.1.2
           path: quarshell-proxy
       - name: Checkout quarshell-runtime workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.1
+          ref: v0.1.2
           path: quarshell-runtime
       - name: Checkout quarshell-sdk workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.1
+          ref: v0.1.2
           path: quarshell-sdk
-      - name: Checkout quarshell-slogx workspace dependency
-        uses: actions/checkout@v4
-        with:
-          repository: KLORQ/quarshell-slogx
-          ref: v0.1.5
-          path: quarshell-slogx
       - name: Write go.work
         working-directory: ${{ github.workspace }}
         shell: bash
@@ -144,7 +105,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.27.2"
+          go-version: "1.27.3"
           cache: true
           cache-dependency-path: |
             quarshell-cli/go.sum
@@ -179,17 +140,17 @@ jobs:
           helpers="${{ github.workspace }}/helpers"
           bash scripts/build-linux-helpers.sh "$ver" "$helpers" amd64 arm64
 
-          # Same layout as GoReleaser: cautem + libexec/cautem/linux-<arch>/.
+          # Same layout as GoReleaser: quarshell + libexec/quarshell/linux-<arch>/.
           build_cli() {
             local goos="$1" goarch="$2" ext="${3:-}"
-            local name="cautem_$(archive_os "$goos")_$(archive_arch "$goarch")"
+            local name="quarshell_$(archive_os "$goos")_$(archive_arch "$goarch")"
             local stage="${out}/stage-${name}"
             echo "→ ${name}"
-            mkdir -p "${stage}/libexec/cautem"
+            mkdir -p "${stage}/libexec/quarshell"
             GOOS="$goos" GOARCH="$goarch" go build -trimpath \
               -ldflags="-s -w -X github.com/KLORQ/quarshell-cli/internal/service.BuildVersion=${ver}" \
-              -o "${stage}/cautem${ext}" ./cmd/cautem
-            cp -R "${helpers}/linux-${goarch}" "${stage}/libexec/cautem/"
+              -o "${stage}/quarshell${ext}" ./cmd/quarshell
+            cp -R "${helpers}/linux-${goarch}" "${stage}/libexec/quarshell/"
             if [[ "$goos" != "windows" && -d ../quarshell-gateway ]]; then
               GOOS="$goos" GOARCH="$goarch" go build -C ../quarshell-gateway -trimpath -ldflags="-s -w" \
                 -o "${stage}/quarshell-gateway" ./cmd/quarshell-gateway
@@ -240,7 +201,7 @@ jobs:
 
             ### Install
             ```bash
-            curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell-cli/main/install.sh | CAUTEM_VERSION=nightly sh
+            curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell-cli/main/install.sh | QUARSHELL_VERSION=nightly sh
             ```
           files: dist/*
         env:

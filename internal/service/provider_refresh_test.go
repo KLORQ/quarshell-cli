@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/KLORQ/quarshell-providers/provider"
+	"github.com/KLORQ/quarshell-policy/provider"
 )
 
 func TestProfileRefreshConfigMapsSecretsAndOutputs(t *testing.T) {

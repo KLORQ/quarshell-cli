@@ -7,21 +7,19 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-
-	"github.com/KLORQ/quarshell-driver/driver"
 )
 
 // Linux helper binaries mounted into sandboxes and proxy sidecars. Release
-// archives ship them under <prefix>/libexec/cautem/linux-<arch>/ next to
-// <prefix>/bin/cautem; source checkouts cross-compile them on demand.
+// archives ship them under <prefix>/libexec/quarshell/linux-<arch>/ next to
+// <prefix>/bin/quarshell; source checkouts cross-compile them on demand.
 const (
-	helperCLI        = "cautem"
-	helperInit       = "cautem-init"
-	helperSSHD       = "cautem-sshd"
-	helperSupervisor = "cautem-supervisor"
+	helperCLI        = "quarshell"
+	helperInit       = "quarshell-init"
+	helperSSHD       = "quarshell-sshd"
+	helperSupervisor = "quarshell-supervisor"
 
 	// EnvHelpersDir pins the directory holding linux helpers (no fallbacks).
-	EnvHelpersDir = "CAUTEM_HELPERS_DIR"
+	EnvHelpersDir = "QUARSHELL_HELPERS_DIR"
 )
 
 // helperDirs lists where bundled linux helpers may live for this install.
@@ -37,7 +35,7 @@ func helperDirs() []string {
 		exe = r
 	}
 	dir := filepath.Dir(exe)
-	sub := filepath.Join("libexec", "cautem", "linux-"+runtime.GOARCH)
+	sub := filepath.Join("libexec", "quarshell", "linux-"+runtime.GOARCH)
 	return []string{
 		filepath.Join(dir, "..", sub),
 		filepath.Join(dir, sub),
@@ -76,18 +74,6 @@ func resolveLinuxHelper(ctx context.Context, name, module string, build func(con
 			return exe, nil
 		}
 	}
-	return "", fmt.Errorf("linux %s helper not installed (%v); reinstall with install.sh (ships libexec/cautem/linux-%s) or set %s",
+	return "", fmt.Errorf("linux %s helper not installed (%v); reinstall with install.sh (ships libexec/quarshell/linux-%s) or set %s",
 		name, srcErr, runtime.GOARCH, EnvHelpersDir)
-}
-
-func ensureProxyBin(ctx context.Context) (string, error) {
-	return resolveLinuxHelper(ctx, helperCLI, "github.com/KLORQ/quarshell-cli", driver.EnsureLinuxCLI)
-}
-
-func ensureSSHDBin(ctx context.Context) (string, error) {
-	return resolveLinuxHelper(ctx, helperSSHD, "github.com/KLORQ/quarshell-runtime", driver.EnsureLinuxSSHD)
-}
-
-func ensureSupervisorBin(ctx context.Context) (string, error) {
-	return resolveLinuxHelper(ctx, helperSupervisor, "github.com/KLORQ/quarshell-runtime", driver.EnsureLinuxSupervisor)
 }

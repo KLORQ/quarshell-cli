@@ -1,5 +1,5 @@
-#compdef cautem
-_cautem() {
+#compdef quarshell
+_quarshell() {
     if (( CURRENT == 3 )) && [[ "${words[2]}" == "service" || "${words[2]}" == "svc" ]]; then
         local -a service_commands=(expose list get delete)
         _describe 'service subcommand' service_commands
@@ -19,4 +19,4 @@ _cautem() {
     _describe 'command' commands
 }
 
-compdef _cautem cautem
+compdef _quarshell quarshell

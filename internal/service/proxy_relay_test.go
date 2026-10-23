@@ -8,7 +8,7 @@ func TestSupervisorRelayEnabledForRemoteMTLSControlWithoutSSHSocket(t *testing.T
 		want                                                               bool
 	}{
 		{name: "remote mTLS control", controlAddress: "supervisor.default.svc:5502", gatewayURL: "https://gateway.test", token: "sandbox-token", want: true},
-		{name: "local VM control socket", controlAddress: "/run/cautem/supervisor-control.sock", gatewayURL: "https://gateway.test", token: "sandbox-token", want: true},
+		{name: "local VM control socket", controlAddress: "/run/quarshell/supervisor-control.sock", gatewayURL: "https://gateway.test", token: "sandbox-token", want: true},
 		{name: "remote target bridge", targetEndpoint: "workload.default.svc:5503", gatewayURL: "https://gateway.test", token: "sandbox-token", want: true},
 		{name: "local SSH socket", sshSocket: "/run/ssh.sock", gatewayURL: "https://gateway.test", token: "sandbox-token", want: true},
 		{name: "no relay transport", gatewayURL: "https://gateway.test", token: "sandbox-token"},

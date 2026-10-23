@@ -78,7 +78,7 @@ func readSupervisorAuthBundle(path string) (isolation.HostAuthBundle, error) {
 	if err != nil || len(data) > isolation.MaxAuthBundleBytes {
 		return isolation.HostAuthBundle{}, fmt.Errorf("proxy: read supervisor auth bundle: invalid size or read failure")
 	}
-	descriptorPath := strings.TrimSpace(os.Getenv("CAUTEM_ISOLATION_DESCRIPTOR_PATH"))
+	descriptorPath := strings.TrimSpace(os.Getenv("QUARSHELL_ISOLATION_DESCRIPTOR_PATH"))
 	if !filepath.IsAbs(descriptorPath) || filepath.Clean(descriptorPath) != descriptorPath {
 		return isolation.HostAuthBundle{}, fmt.Errorf("proxy: supervisor auth bundle requires a clean isolation descriptor path")
 	}
@@ -107,7 +107,7 @@ func readSupervisorAuthBundle(path string) (isolation.HostAuthBundle, error) {
 	if err != nil {
 		return isolation.HostAuthBundle{}, fmt.Errorf("proxy: validate supervisor auth bundle: %w", err)
 	}
-	if descriptor.SandboxID != strings.TrimSpace(os.Getenv("CAUTEM_SANDBOX")) || descriptor.BackendName != strings.TrimSpace(os.Getenv("CAUTEM_ADMITTED_ISOLATION_BACKEND")) {
+	if descriptor.SandboxID != strings.TrimSpace(os.Getenv("QUARSHELL_SANDBOX")) || descriptor.BackendName != strings.TrimSpace(os.Getenv("QUARSHELL_ADMITTED_ISOLATION_BACKEND")) {
 		return isolation.HostAuthBundle{}, fmt.Errorf("proxy: supervisor auth bundle does not match sandbox admission")
 	}
 	return bundle, nil

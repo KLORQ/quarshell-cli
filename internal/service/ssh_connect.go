@@ -17,7 +17,6 @@ import (
 	"github.com/KLORQ/quarshell-cli/internal/storage/gwconfig"
 	"github.com/KLORQ/quarshell-core/defaults"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	"golang.org/x/crypto/ssh"
 	"golang.org/x/term"
 )
 
@@ -56,7 +55,7 @@ func (a *App) resolveGatewayURL(url, name string) (string, error) {
 		}
 		g, ok := cfg.Gateways[name]
 		if !ok || g.URL == "" {
-			return "", fmt.Errorf("gateway %q not in config (cautem gateway add)", name)
+			return "", fmt.Errorf("gateway %q not in config (quarshell gateway add)", name)
 		}
 		return strings.TrimRight(g.URL, "/"), nil
 	}
@@ -341,37 +340,3 @@ func bridgeStdio(ctx context.Context, conn net.Conn, in io.Reader, out io.Writer
 
 // openSSHClient is an in-process SSH client over the gateway relay; cleanup
 // closes it and revokes the session.
-func (a *App) openSSHClient(ctx context.Context, sandbox string) (*ssh.Client, func(), error) {
-	gwURL, err := a.currentGatewayURL()
-	if err != nil {
-		return nil, nil, err
-	}
-	c := a.clientFor(gwURL)
-	sess, err := createSSHSessionWait(ctx, c, sandbox, sessionReadyTimeout)
-	if err != nil {
-		return nil, nil, err
-	}
-	revoke := func() {
-		rctx, cancel := context.WithTimeout(context.Background(), TimeoutAPIShort)
-		defer cancel()
-		_ = c.RevokeSSHSession(rctx, sess.Token)
-	}
-	conn, err := DialSSHRelay(ctx, c, sess.SandboxID, sess.Token)
-	if err != nil {
-		revoke()
-		return nil, nil, err
-	}
-	cc, chans, reqs, err := ssh.NewClientConn(conn, "sandbox", &ssh.ClientConfig{
-		User: "sandbox",
-		// Ephemeral host key; the relay is authenticated by the session token.
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //nolint:gosec
-		Timeout:         TimeoutAPI,
-	})
-	if err != nil {
-		_ = conn.Close()
-		revoke()
-		return nil, nil, fmt.Errorf("ssh handshake: %w", err)
-	}
-	client := ssh.NewClient(cc, chans, reqs)
-	return client, func() { _ = client.Close(); revoke() }, nil
-}

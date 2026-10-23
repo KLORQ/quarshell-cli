@@ -43,7 +43,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 			return fmt.Errorf("sandbox create: --editor must be vscode|cursor")
 		}
 		if len(opt.Argv) > 0 {
-			return fmt.Errorf("sandbox create: --editor cannot be combined with a trailing command; use `cautem sandbox connect NAME --editor %s` after the sandbox is ready", editor)
+			return fmt.Errorf("sandbox create: --editor cannot be combined with a trailing command; use `quarshell sandbox connect NAME --editor %s` after the sandbox is ready", editor)
 		}
 		if opt.ExposePort > 0 || len(opt.Forwards) > 0 {
 			return fmt.Errorf("sandbox create: --editor cannot be combined with --expose or --forward")
@@ -72,8 +72,8 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 		if image == "" && rootfsTarPath == "" {
 			return fmt.Errorf("sandbox create: provide --image, --from, or a shared --template")
 		}
-		if rootfsTarPath == "" && opt.From != "" && strings.HasPrefix(image, "cautem-sandbox:") {
-			return fmt.Errorf("sandbox create: --from %q resolves to a local-only image; publish it, set CAUTEM_USE_GHCR=1, or pass a remotely pullable --image", opt.From)
+		if rootfsTarPath == "" && opt.From != "" && strings.HasPrefix(image, "quarshell-sandbox:") {
+			return fmt.Errorf("sandbox create: --from %q resolves to a local-only image; publish it, set QUARSHELL_USE_GHCR=1, or pass a remotely pullable --image", opt.From)
 		}
 	}
 	var cpuMillis uint32
@@ -140,7 +140,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 		return fmt.Errorf("sandbox create: %w", err)
 	}
 	if url == "" {
-		return fmt.Errorf("sandbox create: no Gateway selected; use cautem gateway select")
+		return fmt.Errorf("sandbox create: no Gateway selected; use quarshell gateway select")
 	}
 	workspace := strings.TrimSpace(opt.GatewayWorkspace)
 	if workspace == "" {
@@ -205,7 +205,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 	sandbox := klorq.Sandbox{
 		Name: opt.Name, Workspace: workspace, Image: image,
 		WorkloadTemplateName: opt.Template, Labels: opt.Labels,
-		CPUMillis: cpuMillis, MemoryBytes: memoryBytes, GPUCount: gpuCount, GPURequested: opt.GPU || envTruthy("CAUTEM_GPU"),
+		CPUMillis: cpuMillis, MemoryBytes: memoryBytes, GPUCount: gpuCount, GPURequested: opt.GPU || envTruthy("QUARSHELL_GPU"),
 		Environment: opt.Env, DriverConfigJSON: driverConfigJSON,
 		AttachedProviders: attachedProviders, RestartPolicy: opt.RestartPolicy,
 		// OpenShell forces retention when a forward or service exposure needs
@@ -246,7 +246,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 			return fmt.Errorf("sandbox create --upload preflight: %w", destinationErr)
 		}
 		if uploadErr := uploadGatewayPath(ctx, client, workspace, created.Name, preparedUpload, destination, TimeoutWork); uploadErr != nil {
-			return fmt.Errorf("sandbox %q was created, but upload failed; retry with `cautem sandbox upload %s %s`: %w", created.Name, opt.Upload, created.Name+":"+destination, uploadErr)
+			return fmt.Errorf("sandbox %q was created, but upload failed; retry with `quarshell sandbox upload %s %s`: %w", created.Name, opt.Upload, created.Name+":"+destination, uploadErr)
 		}
 	}
 	for _, port := range opt.Forwards {
@@ -256,7 +256,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 	}
 	if approvalMode != "" && approvalMode != "manual" {
 		if settingErr := client.PutSandboxSetting(ctx, workspace, created.Name, "proposal_approval_mode", approvalMode); settingErr != nil {
-			fmt.Fprintf(os.Stderr, "warning: sandbox created but approval mode could not be set: %v\n  retry with: cautem settings set %s --key proposal_approval_mode --value %s\n", settingErr, created.Name, approvalMode)
+			fmt.Fprintf(os.Stderr, "warning: sandbox created but approval mode could not be set: %v\n  retry with: quarshell settings set %s --key proposal_approval_mode --value %s\n", settingErr, created.Name, approvalMode)
 		}
 	}
 	if editor != "" {
@@ -265,7 +265,7 @@ func (a *App) sandboxCreateOpenShell(opt SandboxCreateOpts) error {
 	if opt.ExposePort > 0 {
 		serviceURL := createdResult.ServiceURLs[created.Name]
 		if serviceURL == "" {
-			return fmt.Errorf("sandbox create: sandbox %s was created, but Gateway did not return its service URL; retry with `cautem service expose %s %d`", created.Name, created.Name, opt.ExposePort)
+			return fmt.Errorf("sandbox create: sandbox %s was created, but Gateway did not return its service URL; retry with `quarshell service expose %s %d`", created.Name, created.Name, opt.ExposePort)
 		}
 		modeLabel := "strip"
 		if opt.ExposeAuthorizationMode == "bearer-passthrough" {

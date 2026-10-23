@@ -2,18 +2,16 @@ module github.com/KLORQ/quarshell-cli
 
 go 1.27.0
 
-toolchain go1.27.2
+toolchain go1.27.3
 
 require (
-	github.com/KLORQ/quarshell-core v0.4.2
-	github.com/KLORQ/quarshell-display v0.1.1
-	github.com/KLORQ/quarshell-driver v0.1.1
-	github.com/KLORQ/quarshell-proto v0.2.2
-	github.com/KLORQ/quarshell-providers v0.1.1
-	github.com/KLORQ/quarshell-proxy v0.1.1
-	github.com/KLORQ/quarshell-runtime v0.1.1
-	github.com/KLORQ/quarshell-sdk v0.1.1
-	github.com/KLORQ/quarshell-slogx v0.1.5
+	github.com/KLORQ/quarshell-core v0.5.0
+	github.com/KLORQ/quarshell-driver v0.2.0
+	github.com/KLORQ/quarshell-policy v0.2.0
+	github.com/KLORQ/quarshell-proto v0.2.3
+	github.com/KLORQ/quarshell-proxy v0.1.2
+	github.com/KLORQ/quarshell-runtime v0.1.2
+	github.com/KLORQ/quarshell-sdk v0.1.2
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/coder/websocket v1.8.15
 	github.com/gdamore/tcell/v2 v2.8.1

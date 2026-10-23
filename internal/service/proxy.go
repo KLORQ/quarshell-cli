@@ -12,17 +12,14 @@ import (
 	"time"
 
 	"github.com/KLORQ/quarshell-cli/internal/logger"
-	"github.com/KLORQ/quarshell-cli/internal/storage/gwconfig"
 	"github.com/KLORQ/quarshell-core/defaults"
-	"github.com/KLORQ/quarshell-core/engine"
-	"github.com/KLORQ/quarshell-core/env"
-	"github.com/KLORQ/quarshell-core/policy"
+	"github.com/KLORQ/quarshell-core/slogx"
+	"github.com/KLORQ/quarshell-policy/engine"
 	"github.com/KLORQ/quarshell-proxy/proxy"
 	"github.com/KLORQ/quarshell-runtime/relayclient"
 	"github.com/KLORQ/quarshell-runtime/relaytarget"
 	"github.com/KLORQ/quarshell-runtime/supervisorcontrol"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	"github.com/KLORQ/quarshell-slogx"
 )
 
 // ProxyOpts for foreground host-side CONNECT proxy (debug / host-proxy mode).
@@ -76,24 +73,24 @@ func (a *App) Proxy(opt ProxyOpts) error {
 	}
 	logDir := opt.LogDir
 	if logDir == "" {
-		logDir = os.Getenv("CAUTEM_LOG_DIR")
+		logDir = os.Getenv("QUARSHELL_LOG_DIR")
 	}
 	if logDir == "" {
 		logDir = "/var/log"
 	}
 	gwURL := opt.GatewayURL
 	if gwURL == "" {
-		gwURL = os.Getenv("CAUTEM_GATEWAY_URL")
+		gwURL = os.Getenv("QUARSHELL_GATEWAY_URL")
 	}
 	sandbox := opt.Sandbox
 	if sandbox == "" {
-		sandbox = strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_SANDBOX_ID"))
+		sandbox = strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_SANDBOX_ID"))
 		if sandbox == "" {
-			sandbox = os.Getenv("CAUTEM_SANDBOX")
+			sandbox = os.Getenv("QUARSHELL_SANDBOX")
 		}
 	}
-	// OpenShell-style: CAUTEM_GATEWAY_URL must resolve via ExtraHosts
-	// (host.cautem.internal → host-gateway). No hostname guessing.
+	// OpenShell-style: QUARSHELL_GATEWAY_URL must resolve via ExtraHosts
+	// (host.quarshell.internal → host-gateway). No hostname guessing.
 	var gw *klorq.Client
 	var pusher proxy.LogPusher
 	if gwURL != "" && sandbox != "" {
@@ -101,7 +98,7 @@ func (a *App) Proxy(opt ProxyOpts) error {
 			gwURL = GuestGatewayURL(gwURL)
 		}
 		gw = klorq.NewWithToken(gwURL, sandboxProtocolToken)
-		gw.SetGRPCEndpoint(strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_GRPC_ENDPOINT")))
+		gw.SetGRPCEndpoint(strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_GRPC_ENDPOINT")))
 		pusher = gatewayAuditPusher{c: gw}
 		if sandboxToken == "" {
 			log.Warn("no sandbox supervisor token; gateway calls will be rejected", "env", EnvSandboxToken)
@@ -123,7 +120,7 @@ func (a *App) Proxy(opt ProxyOpts) error {
 		srv.ReportPolicyStatus = func(reportCtx context.Context, revision uint32, loadError string) error {
 			return relayclient.ReportPolicyStatusUntilAck(reportCtx, relayclient.Config{
 				GatewayURL:          gwURL,
-				GatewayGRPCEndpoint: strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_GRPC_ENDPOINT")),
+				GatewayGRPCEndpoint: strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_GRPC_ENDPOINT")),
 				Sandbox:             sandbox,
 				Token:               sandboxProtocolToken,
 				TLSConfig:           policyTLSConfig,
@@ -152,7 +149,7 @@ func (a *App) Proxy(opt ProxyOpts) error {
 	// gateway. SSH may use a shared Unix socket, while lifecycle control can
 	// independently use mTLS when the workload lives in another Pod.
 	sshSocket := strings.TrimSpace(os.Getenv(EnvSSHSocket))
-	supervisorControlSocket := strings.TrimSpace(os.Getenv("CAUTEM_SUPERVISOR_CONTROL_SOCKET"))
+	supervisorControlSocket := strings.TrimSpace(os.Getenv("QUARSHELL_SUPERVISOR_CONTROL_SOCKET"))
 	controlAddress := supervisorControlListenAddress(
 		os.Getenv(supervisorcontrol.EnvListen),
 		os.Getenv(supervisorcontrol.EnvEndpoint),
@@ -180,15 +177,15 @@ func (a *App) Proxy(opt ProxyOpts) error {
 		}
 		relayConfig := relayclient.Config{
 			GatewayURL:                        gwURL,
-			GatewayGRPCEndpoint:               strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_GRPC_ENDPOINT")),
+			GatewayGRPCEndpoint:               strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_GRPC_ENDPOINT")),
 			GatewayToken:                      sandboxToken,
 			SupervisorControlSocket:           supervisorControlSocket,
 			SupervisorControlAddress:          controlAddress,
 			SupervisorControlTLSConfig:        controlTLSConfig,
 			SupervisorControlExpectedIdentity: strings.TrimSpace(os.Getenv(supervisorcontrol.EnvExpectedClientIdentity)),
-			IsolationDescriptorPath:           strings.TrimSpace(os.Getenv("CAUTEM_ISOLATION_DESCRIPTOR_PATH")),
-			IsolationSandboxID:                strings.TrimSpace(os.Getenv("CAUTEM_SANDBOX")),
-			AdmittedIsolationBackend:          strings.TrimSpace(os.Getenv("CAUTEM_ADMITTED_ISOLATION_BACKEND")),
+			IsolationDescriptorPath:           strings.TrimSpace(os.Getenv("QUARSHELL_ISOLATION_DESCRIPTOR_PATH")),
+			IsolationSandboxID:                strings.TrimSpace(os.Getenv("QUARSHELL_SANDBOX")),
+			AdmittedIsolationBackend:          strings.TrimSpace(os.Getenv("QUARSHELL_ADMITTED_ISOLATION_BACKEND")),
 			Sandbox:                           sandbox,
 			Token:                             sandboxProtocolToken,
 			SSHSocket:                         sshSocket,
@@ -309,10 +306,10 @@ func gatewayProxySecretSnapshot(environment, gateway map[string]string, managed 
 }
 
 // GuestGatewayURL rewrites loopback (and legacy host.docker.internal) gateway URLs
-// to host.cautem.internal — the OpenShell-style host-gateway alias injected via ExtraHosts.
+// to host.quarshell.internal — the OpenShell-style host-gateway alias injected via ExtraHosts.
 
 // GuestGatewayURL rewrites loopback (and legacy host.docker.internal) gateway URLs
-// to host.cautem.internal — the OpenShell-style host-gateway alias injected via ExtraHosts.
+// to host.quarshell.internal — the OpenShell-style host-gateway alias injected via ExtraHosts.
 func GuestGatewayURL(gwURL string) string {
 	raw := strings.TrimSpace(gwURL)
 	u, err := url.Parse(raw)
@@ -348,148 +345,33 @@ func (g gatewayAuditPusher) PostLogs(ctx context.Context, sandbox string, lines 
 	return g.c.PostSandboxLogs(ctx, sandbox, out)
 }
 
-func hostEnvForPolicy(doc policy.Document) []string {
-	out := env.FromHostForGuest(doc.CredentialEnvKeys()...)
-	// Keep guest agent installs on PATH even when login shells reset it.
-	out = append(out,
-		"HOME="+defaults.GuestHome,
-		"PATH="+defaults.GuestPath,
-	)
-	return out
-}
-
-// credentialPlaceholdersForSandbox returns cautem:resolve:env placeholders for the
+// credentialPlaceholdersForSandbox returns quarshell:resolve:env placeholders for the
 // sandbox effective policy credential keys (and attached provider guest keys).
 // Profiles with inject_env: false (Cursor) are skipped — Agent validates the key
 // client-side and rejects placeholders.
 
-// credentialPlaceholdersForSandbox returns cautem:resolve:env placeholders for the
+// credentialPlaceholdersForSandbox returns quarshell:resolve:env placeholders for the
 // sandbox effective policy credential keys (and attached provider guest keys).
 // Profiles with inject_env: false (Cursor) are skipped — Agent validates the key
 // client-side and rejects placeholders.
-func (a *App) credentialPlaceholdersForSandbox(sandbox string) []string {
-	keys := a.sandboxCredentialKeys(sandbox)
-	return env.FromHostForGuest(keys...)
-}
-
-func (a *App) sandboxCredentialKeys(sandbox string) []string {
-	var keys []string
-	seen := map[string]struct{}{}
-	omit := map[string]struct{}{} // inject_env:false — never guest-inject
-	add := func(list []string) {
-		for _, k := range list {
-			k = strings.TrimSpace(k)
-			if k == "" {
-				continue
-			}
-			if _, skip := omit[k]; skip {
-				continue
-			}
-			if _, ok := seen[k]; ok {
-				continue
-			}
-			seen[k] = struct{}{}
-			keys = append(keys, k)
-		}
-	}
-	if c, err := a.gatewayClient(); err == nil {
-		ctx, cancel := a.withTimeout(TimeoutAPIShort)
-		defer cancel()
-		if sb, err := c.GetControlSandbox(ctx, a.GlobalWorkspace, sandbox); err == nil {
-			for _, name := range sb.AttachedProviders {
-				rec, err := c.GetProvider(ctx, name)
-				if err != nil {
-					continue
-				}
-				prof, err := loadBuiltinProfile(rec.Type)
-				if err != nil {
-					// Unknown profile: fall back to instance env vars.
-					add(rec.EnvVars)
-					continue
-				}
-				for _, cred := range prof.Credentials {
-					if cred.InjectEnv != nil && !*cred.InjectEnv {
-						for _, k := range cred.EnvVars {
-							omit[strings.TrimSpace(k)] = struct{}{}
-						}
-					}
-				}
-				guest := prof.GuestEnvKeys()
-				if len(rec.EnvVars) > 0 {
-					// Restrict to instance keys, still honoring inject_env:false.
-					var filtered []string
-					for _, k := range rec.EnvVars {
-						if _, skip := omit[k]; skip {
-							continue
-						}
-						filtered = append(filtered, k)
-					}
-					guest = filtered
-				}
-				add(guest)
-			}
-		}
-		if b, err := c.EffectivePolicy(ctx, sandbox); err == nil {
-			if doc, err := policy.Parse(b); err == nil {
-				add(doc.CredentialEnvKeys())
-			}
-		}
-	}
-	return keys
-}
-
-func mergeEnvEntries(base, extra []string) []string {
-	keys := map[string]int{}
-	out := make([]string, 0, len(base)+len(extra))
-	add := func(entry string) {
-		key, _, ok := strings.Cut(entry, "=")
-		if !ok || key == "" {
-			return
-		}
-		if i, exists := keys[key]; exists {
-			out[i] = entry
-			return
-		}
-		keys[key] = len(out)
-		out = append(out, entry)
-	}
-	for _, e := range base {
-		add(e)
-	}
-	for _, e := range extra {
-		add(e)
-	}
-	return out
-}
-
-func proxySecretsForPolicy(doc policy.Document) []string {
-	out := env.SecretsFromHost(doc.CredentialEnvKeys()...)
-	for _, k := range defaults.ProxyEnvKeys {
-		if v, ok := os.LookupEnv(k); ok && v != "" {
-			out = append(out, k+"="+v)
-		}
-	}
-	return out
-}
-
 // EnvSandboxToken carries the sandbox-scoped supervisor token into the proxy
 // sidecar only (never the sandbox container).
 
 // EnvSandboxToken carries the sandbox-scoped supervisor token into the proxy
 // sidecar only (never the sandbox container).
-const EnvSandboxToken = "CAUTEM_SANDBOX_TOKEN"
+const EnvSandboxToken = "QUARSHELL_SANDBOX_TOKEN"
 
 // EnvSandboxProtocolToken carries the distinct Sandbox Protocol bearer from a
 // paired Gateway/Sandbox runtime credential set.
-const EnvSandboxProtocolToken = "CAUTEM_SANDBOX_PROTOCOL_TOKEN"
+const EnvSandboxProtocolToken = "QUARSHELL_SANDBOX_PROTOCOL_TOKEN"
 
 // EnvSandboxTokenFile points to a file containing the sandbox supervisor
 // bearer. Kubernetes uses this form so the token never appears in Pod env.
-const EnvSandboxTokenFile = "CAUTEM_SANDBOX_TOKEN_FILE"
+const EnvSandboxTokenFile = "QUARSHELL_SANDBOX_TOKEN_FILE"
 
 // EnvSupervisorAuthBundleFile points to the driver's private, descriptor-bound
 // host supervisor authentication bundle.
-const EnvSupervisorAuthBundleFile = "CAUTEM_SUPERVISOR_AUTH_BUNDLE_FILE"
+const EnvSupervisorAuthBundleFile = "QUARSHELL_SUPERVISOR_AUTH_BUNDLE_FILE"
 
 func supervisorControlListenAddress(listen, legacyEndpoint string) string {
 	if address := strings.TrimSpace(listen); address != "" {
@@ -501,35 +383,14 @@ func supervisorControlListenAddress(listen, legacyEndpoint string) string {
 // EnvSSHSocket is set by the driver when the sidecar shares the sshd socket.
 
 // EnvSSHSocket is set by the driver when the sidecar shares the sshd socket.
-const EnvSSHSocket = "CAUTEM_SSH_SOCKET"
+const EnvSSHSocket = "QUARSHELL_SSH_SOCKET"
 
-const EnvTargetDialSocket = "CAUTEM_TCP_DIAL_SOCKET"
+const EnvTargetDialSocket = "QUARSHELL_TCP_DIAL_SOCKET"
 
-// proxyGatewayEnv adds CAUTEM_GATEWAY_URL / CAUTEM_SANDBOX /
-// CAUTEM_SANDBOX_TOKEN so the sidecar can resolve encrypted provider
+// proxyGatewayEnv adds QUARSHELL_GATEWAY_URL / QUARSHELL_SANDBOX /
+// QUARSHELL_SANDBOX_TOKEN so the sidecar can resolve encrypted provider
 // secrets, push OCSF logs and run the supervisor relay (OpenShell-like).
 
-// proxyGatewayEnv adds CAUTEM_GATEWAY_URL / CAUTEM_SANDBOX /
-// CAUTEM_SANDBOX_TOKEN so the sidecar can resolve encrypted provider
+// proxyGatewayEnv adds QUARSHELL_GATEWAY_URL / QUARSHELL_SANDBOX /
+// QUARSHELL_SANDBOX_TOKEN so the sidecar can resolve encrypted provider
 // secrets, push OCSF logs and run the supervisor relay (OpenShell-like).
-func (a *App) proxyGatewayEnv(sandbox, gwURL, sandboxToken string) []string {
-	var out []string
-	if gwURL == "" {
-		if cfg, _, err := gwconfig.Load(); err == nil {
-			gwURL = gwconfig.CurrentURL(cfg)
-		}
-	}
-	if gwURL == "" {
-		return out
-	}
-	guestGW := GuestGatewayURL(gwURL)
-	out = append(out, "CAUTEM_GATEWAY_URL="+guestGW)
-	if sandbox != "" {
-		out = append(out, "CAUTEM_SANDBOX="+sandbox)
-	}
-	if sandboxToken != "" {
-		out = append(out, EnvSandboxToken+"="+sandboxToken)
-	}
-	out = append(out, "CAUTEM_LOG_DIR=/var/log")
-	return out
-}

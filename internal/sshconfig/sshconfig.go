@@ -1,5 +1,5 @@
 // Package sshconfig manages the OpenShell-style SSH client configuration:
-// a cautem-owned file (~/.config/cautem/ssh_config) holding one Host
+// a quarshell-owned file (~/.config/quarshell/ssh_config) holding one Host
 // block per sandbox, pulled into ~/.ssh/config through a single Include line.
 package sshconfig
 
@@ -14,7 +14,7 @@ import (
 )
 
 // AliasPrefix names managed hosts; legacy entries use openshell-<name>.
-const AliasPrefix = "cautem-"
+const AliasPrefix = "quarshell-"
 
 // Alias returns the managed Host alias for a sandbox.
 func Alias(sandbox string) string { return AliasPrefix + sandbox }
@@ -194,8 +194,8 @@ type Paths struct {
 	User    string
 }
 
-// DefaultPaths returns $XDG_CONFIG_HOME/cautem/ssh_config (or
-// ~/.config/cautem/ssh_config) and ~/.ssh/config.
+// DefaultPaths returns $XDG_CONFIG_HOME/quarshell/ssh_config (or
+// ~/.config/quarshell/ssh_config) and ~/.ssh/config.
 func DefaultPaths() (Paths, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -206,7 +206,7 @@ func DefaultPaths() (Paths, error) {
 		cfgDir = filepath.Join(home, ".config")
 	}
 	return Paths{
-		Managed: filepath.Join(cfgDir, "cautem", "ssh_config"),
+		Managed: filepath.Join(cfgDir, "quarshell", "ssh_config"),
 		User:    filepath.Join(home, ".ssh", "config"),
 	}, nil
 }

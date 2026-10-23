@@ -1,4 +1,4 @@
-// Package tui implements `cautem term` — a sandbox browser with live logs.
+// Package tui implements `quarshell term` — a sandbox browser with live logs.
 package tui
 
 import (

@@ -208,7 +208,7 @@ func (a *App) templateGatewayTarget() (url, workspace string, err error) {
 		return "", "", err
 	}
 	if url == "" {
-		return "", "", fmt.Errorf("no Gateway selected (use cautem gateway select or --gateway URL)")
+		return "", "", fmt.Errorf("no Gateway selected (use quarshell gateway select or --gateway URL)")
 	}
 	_, workspace = a.profileScope()
 	if workspace == "" {

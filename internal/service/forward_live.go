@@ -176,7 +176,7 @@ func (a *App) gatewayForwardClient() (*klorq.Client, error) {
 		return nil, err
 	}
 	if url == "" {
-		return nil, fmt.Errorf("no Gateway selected; use cautem gateway select")
+		return nil, fmt.Errorf("no Gateway selected; use quarshell gateway select")
 	}
 	client := a.clientFor(url)
 	client.Workspace = a.workspaceName()
@@ -223,7 +223,7 @@ func (a *App) startForwardChild(id, sandbox, spec, registry string) error {
 	}
 	go func() { _ = cmd.Wait() }()
 	time.Sleep(forwardStartupDelay)
-	fmt.Printf("forward: running in background pid=%d (cautem forward stop %s; log %s)\n", cmd.Process.Pid, id, logPath)
+	fmt.Printf("forward: running in background pid=%d (quarshell forward stop %s; log %s)\n", cmd.Process.Pid, id, logPath)
 	return nil
 }
 
@@ -261,7 +261,7 @@ func (a *App) ForwardStop(id string) error {
 	}
 	rec, ok := m[key].(map[string]any)
 	if !ok {
-		return fmt.Errorf("forward %q not found (cautem forward list)", id)
+		return fmt.Errorf("forward %q not found (quarshell forward list)", id)
 	}
 	if pid, ok := rec["pid"].(float64); ok && int(pid) > 0 && int(pid) != os.Getpid() {
 		if p, err := os.FindProcess(int(pid)); err == nil {

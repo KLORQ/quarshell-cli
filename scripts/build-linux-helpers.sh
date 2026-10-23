@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Cross-compile the linux helpers every release archive ships under
-# libexec/cautem/linux-<arch>/ so installs never need Go or a checkout:
-#   cautem       — proxy sidecar / supervisor relay (linux build of the CLI)
-#   cautem-init  — guest init / harden
-#   cautem-sshd  — guest sshd on a Unix socket (IDE / connect)
+# libexec/quarshell/linux-<arch>/ so installs never need Go or a checkout:
+#   quarshell       — proxy sidecar / supervisor relay (linux build of the CLI)
+#   quarshell-init  — guest init / harden
+#   quarshell-sshd  — guest sshd on a Unix socket (IDE / connect)
 #
 # Usage: scripts/build-linux-helpers.sh VERSION [OUT_DIR] [ARCH...]
 # Run from quarshell-cli with ../quarshell-runtime checked out (GOWORK set).
@@ -19,7 +19,7 @@ arches=("$@")
 [[ ${#arches[@]} -gt 0 ]] || arches=(amd64 arm64)
 
 cli_dir="$(cd "$(dirname "$0")/.." && pwd)"
-runtime_dir="${CAUTEM_RUNTIME_DIR:-${cli_dir}/../quarshell-runtime}"
+runtime_dir="${QUARSHELL_RUNTIME_DIR:-${cli_dir}/../quarshell-runtime}"
 [[ -f "${runtime_dir}/go.mod" ]] || { echo "build-linux-helpers: ${runtime_dir} is not quarshell-runtime" >&2; exit 1; }
 mkdir -p "$out"
 out="$(cd "$out" && pwd)"
@@ -31,8 +31,8 @@ for arch in "${arches[@]}"; do
   mkdir -p "$dst"
   echo "→ linux/${arch} helpers → ${dst}"
   export GOOS=linux GOARCH="$arch" CGO_ENABLED=0
-  go build -C "$cli_dir" -trimpath -ldflags="$ldflags" -o "${dst}/cautem" ./cmd/cautem
-  go build -C "$runtime_dir" -trimpath -ldflags="-s -w" -o "${dst}/cautem-init" ./cmd/cautem-init
-  go build -C "$runtime_dir" -trimpath -ldflags="-s -w" -o "${dst}/cautem-sshd" ./cmd/cautem-sshd
+  go build -C "$cli_dir" -trimpath -ldflags="$ldflags" -o "${dst}/quarshell" ./cmd/quarshell
+  go build -C "$runtime_dir" -trimpath -ldflags="-s -w" -o "${dst}/quarshell-init" ./cmd/quarshell-init
+  go build -C "$runtime_dir" -trimpath -ldflags="-s -w" -o "${dst}/quarshell-sshd" ./cmd/quarshell-sshd
   chmod 0755 "${dst}"/*
 done

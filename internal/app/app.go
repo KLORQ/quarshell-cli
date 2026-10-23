@@ -1,4 +1,4 @@
-// Package app is the composition root for the cautem CLI binary.
+// Package app is the composition root for the quarshell CLI binary.
 package app
 
 import (
@@ -20,7 +20,7 @@ func Run(ctx context.Context, args []string) error {
 	if flags.Verbose {
 		level = slog.LevelDebug
 	}
-	log := logger.Setup(ctx, logger.Options{Service: "cautem", Level: level})
+	log := logger.Setup(ctx, logger.Options{Service: "quarshell", Level: level})
 	ctx = logger.ToContext(ctx, log)
 	return cli.Execute(ctx, args)
 }

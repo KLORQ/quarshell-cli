@@ -57,7 +57,7 @@ func TestHelperDirsLayout(t *testing.T) {
 	if len(dirs) != 2 {
 		t.Fatalf("dirs = %q", dirs)
 	}
-	sub := filepath.Join("libexec", "cautem", "linux-"+runtime.GOARCH)
+	sub := filepath.Join("libexec", "quarshell", "linux-"+runtime.GOARCH)
 	for _, d := range dirs {
 		if !strings.HasSuffix(d, sub) {
 			t.Fatalf("%q does not end with %q", d, sub)

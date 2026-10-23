@@ -33,13 +33,13 @@ var validTemplateName = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])
 
 func dir() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "cautem", "templates"), nil
+		return filepath.Join(xdg, "quarshell", "templates"), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "cautem", "templates"), nil
+	return filepath.Join(home, ".config", "quarshell", "templates"), nil
 }
 
 func pathFor(name string) (string, error) {

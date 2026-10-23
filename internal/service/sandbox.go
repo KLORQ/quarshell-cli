@@ -15,8 +15,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/KLORQ/quarshell-cli/internal/storage/templates"
+	slogx "github.com/KLORQ/quarshell-core/slogx"
 	"github.com/KLORQ/quarshell-sdk/go/klorq"
-	slogx "github.com/KLORQ/quarshell-slogx"
 	"gopkg.in/yaml.v3"
 )
 
@@ -412,9 +412,9 @@ func (a *App) LogsOpts(opt LogsOpts) error {
 	return a.LogsToOpts(a.CommandContext(), opt, os.Stdout)
 }
 
-// LogsTo streams sandbox container logs to w (used by `cautem term` live observation panel).
+// LogsTo streams sandbox container logs to w (used by `quarshell term` live observation panel).
 
-// LogsTo streams sandbox container logs to w (used by `cautem term` live observation panel).
+// LogsTo streams sandbox container logs to w (used by `quarshell term` live observation panel).
 func (a *App) LogsTo(ctx context.Context, name string, follow bool, w io.Writer) error {
 	return a.LogsToOpts(ctx, LogsOpts{Names: []string{name}, Follow: follow}, w)
 }

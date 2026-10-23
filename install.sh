@@ -1,5 +1,5 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Install the Quarshell CLI and, where shipped, its local Gateway.
@@ -8,15 +8,15 @@
 #   curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell-cli/main/install.sh | sh
 #
 # Environment:
-#   CAUTEM_VERSION       Release tag (default: latest release)
-#   CAUTEM_INSTALL_DIR   Install directory (default: ~/.local/bin)
-#   CAUTEM_REPO          Override owner/name (default: KLORQ/quarshell-cli)
-#   CAUTEM_RELEASE_URL   Base URL holding <tag>/<archive> and checksums.txt
-#   CAUTEM_NO_START      Set to 1 to skip starting the local gateway
+#   QUARSHELL_VERSION       Release tag (default: latest release)
+#   QUARSHELL_INSTALL_DIR   Install directory (default: ~/.local/bin)
+#   QUARSHELL_REPO          Override owner/name (default: KLORQ/quarshell-cli)
+#   QUARSHELL_RELEASE_URL   Base URL holding <tag>/<archive> and checksums.txt
+#   QUARSHELL_NO_START      Set to 1 to skip starting the local gateway
 set -eu
 
-APP_NAME="cautem"
-REPO="${CAUTEM_REPO:-KLORQ/quarshell-cli}"
+APP_NAME="quarshell"
+REPO="${QUARSHELL_REPO:-KLORQ/quarshell-cli}"
 GITHUB_URL="https://github.com/$REPO"
 API_URL="https://api.github.com/repos/$REPO"
 
@@ -51,14 +51,14 @@ detect_archive() {
   esac
   if [ "$_os_name" = "Windows" ]; then
     [ "$_arch_name" = "x86_64" ] || error "Windows arm64 packages are not published"
-    printf 'cautem_%s_%s.zip\n' "$_os_name" "$_arch_name"
+    printf 'quarshell_%s_%s.zip\n' "$_os_name" "$_arch_name"
   else
-    printf 'cautem_%s_%s.tar.gz\n' "$_os_name" "$_arch_name"
+    printf 'quarshell_%s_%s.tar.gz\n' "$_os_name" "$_arch_name"
   fi
 }
 
 resolve_version() {
-  if [ -n "${CAUTEM_VERSION:-}" ]; then printf '%s\n' "$CAUTEM_VERSION"; return; fi
+  if [ -n "${QUARSHELL_VERSION:-}" ]; then printf '%s\n' "$QUARSHELL_VERSION"; return; fi
   _json="$(mktemp)"
   download "$API_URL/releases/latest" "$_json" 2>/dev/null || error "cannot list releases from $REPO"
   _tag="$(sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' "$_json" | head -1)"
@@ -68,7 +68,7 @@ resolve_version() {
 }
 
 install_dir() {
-  if [ -n "${CAUTEM_INSTALL_DIR:-}" ]; then printf '%s\n' "$CAUTEM_INSTALL_DIR"; return; fi
+  if [ -n "${QUARSHELL_INSTALL_DIR:-}" ]; then printf '%s\n' "$QUARSHELL_INSTALL_DIR"; return; fi
   printf '%s/.local/bin\n' "$HOME"
 }
 
@@ -91,7 +91,7 @@ main() {
   require_cmd uname; require_cmd sed; require_cmd mktemp; require_cmd awk; require_cmd install; require_cmd cp
   _version="$(resolve_version)"
   _archive="$(detect_archive)"
-  _base="${CAUTEM_RELEASE_URL:-$GITHUB_URL/releases/download}/$_version"
+  _base="${QUARSHELL_RELEASE_URL:-$GITHUB_URL/releases/download}/$_version"
   _dir="$(install_dir)"
   _tmp="$(mktemp -d)"
   trap 'rm -rf "$_tmp"' EXIT HUP INT TERM
@@ -111,11 +111,11 @@ main() {
 
   _exe=""
   case "$_archive" in *_Windows_*.zip) _exe=".exe" ;; esac
-  [ -s "$_payload/cautem$_exe" ] || error "archive does not contain cautem$_exe"
+  [ -s "$_payload/quarshell$_exe" ] || error "archive does not contain quarshell$_exe"
   mkdir -p "$_dir" 2>/dev/null || true
   _sudo=""
   if [ ! -w "$_dir" ]; then _sudo="sudo"; sudo mkdir -p "$_dir"; fi
-  $_sudo install -m 755 "$_payload/cautem$_exe" "$_dir/cautem$_exe"
+  $_sudo install -m 755 "$_payload/quarshell$_exe" "$_dir/quarshell$_exe"
 
   if [ -s "$_payload/quarshell-gateway$_exe" ]; then
     $_sudo install -m 755 "$_payload/quarshell-gateway$_exe" "$_dir/quarshell-gateway$_exe"
@@ -123,31 +123,31 @@ main() {
   else
     info "this platform release does not include the Gateway binary"
   fi
-  if [ -d "$_payload/libexec/cautem" ]; then
-    $_sudo mkdir -p "$_dir/libexec/cautem"
-    $_sudo cp -R "$_payload/libexec/cautem/." "$_dir/libexec/cautem/"
+  if [ -d "$_payload/libexec/quarshell" ]; then
+    $_sudo mkdir -p "$_dir/libexec/quarshell"
+    $_sudo cp -R "$_payload/libexec/quarshell/." "$_dir/libexec/quarshell/"
   fi
   if [ -d "$_payload/providers" ]; then
     $_sudo mkdir -p "$_dir/providers"
     $_sudo cp -R "$_payload/providers/." "$_dir/providers/"
   fi
 
-  info "installed $_dir/cautem$_exe"
+  info "installed $_dir/quarshell$_exe"
   case ":$PATH:" in
     *:"$_dir":*) ;;
     *) info "$_dir is not on PATH; add: export PATH=\"$_dir:\$PATH\"" ;;
   esac
   if [ "$_exe" = ".exe" ]; then
-    info "run cautem from Git Bash; the local Gateway binary is not included on Windows"
-  elif [ "${CAUTEM_NO_START:-0}" != "1" ] && [ -x "$_dir/quarshell-gateway" ]; then
+    info "run quarshell from Git Bash; the local Gateway binary is not included on Windows"
+  elif [ "${QUARSHELL_NO_START:-0}" != "1" ] && [ -x "$_dir/quarshell-gateway" ]; then
     info "starting local gateway"
-    if PATH="$_dir:$PATH" "$_dir/cautem" gateway ensure; then
-      PATH="$_dir:$PATH" "$_dir/cautem" status || true
+    if PATH="$_dir:$PATH" "$_dir/quarshell" gateway ensure; then
+      PATH="$_dir:$PATH" "$_dir/quarshell" status || true
     else
-      info "gateway did not start; run: $_dir/cautem gateway ensure"
+      info "gateway did not start; run: $_dir/quarshell gateway ensure"
     fi
   fi
-  info "next: cautem sandbox create --name demo"
+  info "next: quarshell sandbox create --name demo"
 }
 
 main "$@"

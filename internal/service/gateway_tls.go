@@ -48,7 +48,7 @@ func ensureGatewayTLS(dataDir string) (gatewayTLSFiles, error) {
 	if err != nil {
 		return gatewayTLSFiles{}, err
 	}
-	clientCertPEM, clientKeyPEM, err := signedCert(caCert, caKey, "cautem-local-client", []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}, false)
+	clientCertPEM, clientKeyPEM, err := signedCert(caCert, caKey, "quarshell-local-client", []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}, false)
 	if err != nil {
 		return gatewayTLSFiles{}, err
 	}

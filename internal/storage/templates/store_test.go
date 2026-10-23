@@ -26,10 +26,10 @@ func TestTemplateSaveRoundTripWorkloadResourcesAndProtectsFiles(t *testing.T) {
 		t.Fatalf("template round trip = %+v", got)
 	}
 	if runtime.GOOS != "windows" {
-		if info, err := os.Stat(filepath.Join(root, "cautem", "templates")); err != nil || info.Mode().Perm() != 0o700 {
+		if info, err := os.Stat(filepath.Join(root, "quarshell", "templates")); err != nil || info.Mode().Perm() != 0o700 {
 			t.Fatalf("template directory mode=%v err=%v", info.Mode().Perm(), err)
 		}
-		if info, err := os.Stat(filepath.Join(root, "cautem", "templates", "gpu-kata.json")); err != nil || info.Mode().Perm() != 0o600 {
+		if info, err := os.Stat(filepath.Join(root, "quarshell", "templates", "gpu-kata.json")); err != nil || info.Mode().Perm() != 0o600 {
 			t.Fatalf("template file mode=%v err=%v", info.Mode().Perm(), err)
 		}
 	}

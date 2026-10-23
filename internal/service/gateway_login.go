@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
+	display "github.com/KLORQ/quarshell-cli/internal/display"
 	"github.com/KLORQ/quarshell-cli/internal/storage/gwconfig"
-	display "github.com/KLORQ/quarshell-display"
 	"github.com/KLORQ/quarshell-runtime/idp"
 )
 
@@ -19,7 +19,7 @@ import (
 func (a *App) GatewayLoginInteractive(token string) error {
 	token = strings.TrimSpace(token)
 	if token == "" {
-		token = strings.TrimSpace(os.Getenv("CAUTEM_GATEWAY_TOKEN"))
+		token = strings.TrimSpace(os.Getenv("QUARSHELL_GATEWAY_TOKEN"))
 	}
 	if token != "" {
 		return a.GatewayLogin(token)
@@ -48,7 +48,7 @@ func (a *App) GatewayLoginInteractive(token string) error {
 	}
 	if issuer != "" {
 		if clientID == "" {
-			clientID = firstNonEmptyEnv("CAUTEM_OIDC_CLIENT_ID", "OPENSHELL_OIDC_CLIENT_ID")
+			clientID = firstNonEmptyEnv("QUARSHELL_OIDC_CLIENT_ID", "OPENSHELL_OIDC_CLIENT_ID")
 		}
 		if clientID == "" {
 			clientID = "openshell-cli"

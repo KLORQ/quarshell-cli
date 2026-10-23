@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 #
 # OpenAI Codex CLI preinstalled.
 # Base (quarshell-runtime sandboxes/base) already ships NodeSource Node.js + npm —
 # Debian's `npm` package conflicts with that nodejs (Conflicts: npm).
 
-ARG BASE_IMAGE=cautem-sandbox:local
+ARG BASE_IMAGE=quarshell-sandbox:local
 FROM ${BASE_IMAGE}
 
 ENTRYPOINT []
@@ -26,13 +26,13 @@ RUN npm install -g @openai/codex \
     && /usr/local/bin/codex --version || true \
     && npm cache clean --force
 
-RUN mkdir -p /cautem/data/home/.local/bin /cautem/data/bin /etc/profile.d \
-    && ln -sfn /usr/local/bin/codex /cautem/data/home/.local/bin/codex \
-    && printf '%s\n' 'export PATH="/usr/local/bin:/cautem/data/home/.local/bin:/cautem/data/bin:$PATH"' > /etc/profile.d/cautem-agent.sh
+RUN mkdir -p /quarshell/data/home/.local/bin /quarshell/data/bin /etc/profile.d \
+    && ln -sfn /usr/local/bin/codex /quarshell/data/home/.local/bin/codex \
+    && printf '%s\n' 'export PATH="/usr/local/bin:/quarshell/data/home/.local/bin:/quarshell/data/bin:$PATH"' > /etc/profile.d/quarshell-agent.sh
 
-ENV HOME=/cautem/data/home \
-    PATH=/usr/local/bin:/cautem/data/home/.local/bin:/cautem/data/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV HOME=/quarshell/data/home \
+    PATH=/usr/local/bin:/quarshell/data/home/.local/bin:/quarshell/data/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
 
 WORKDIR /workspace
-ENTRYPOINT ["/usr/local/bin/cautem-init"]
+ENTRYPOINT ["/usr/local/bin/quarshell-init"]
 CMD ["--", "sleep", "infinity"]

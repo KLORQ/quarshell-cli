@@ -50,7 +50,7 @@ func isolate(t *testing.T) string {
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "config"))
 	t.Setenv("XDG_STATE_HOME", filepath.Join(dir, "state"))
 	t.Setenv("HOME", dir)
-	for _, k := range []string{klorq.EnvToken, "OPENSHELL_GATEWAY", "CAUTEM_GATEWAY_URL"} {
+	for _, k := range []string{klorq.EnvToken, "OPENSHELL_GATEWAY", "QUARSHELL_GATEWAY_URL"} {
 		t.Setenv(k, "")
 	}
 	return dir
@@ -64,9 +64,9 @@ func saveGateways(t *testing.T, current string, gws map[string]gwconfig.Gateway)
 }
 
 func TestSSHCommandArgs(t *testing.T) {
-	pc := "/usr/bin/cautem ssh-proxy --gateway-name dev --name box"
+	pc := "/usr/bin/quarshell ssh-proxy --gateway-name dev --name box"
 
-	got := SSHCommandArgs(pc, "cautem-box", true, nil)
+	got := SSHCommandArgs(pc, "quarshell-box", true, nil)
 	joined := strings.Join(got, " ")
 	for _, want := range []string{
 		"-o StrictHostKeyChecking=no",
@@ -79,7 +79,7 @@ func TestSSHCommandArgs(t *testing.T) {
 			t.Fatalf("missing %q in %q", want, joined)
 		}
 	}
-	if got[len(got)-1] != "cautem-box" {
+	if got[len(got)-1] != "quarshell-box" {
 		t.Fatalf("interactive: alias must be last, got %q", got)
 	}
 	for _, a := range got {
@@ -88,11 +88,11 @@ func TestSSHCommandArgs(t *testing.T) {
 		}
 	}
 
-	got = SSHCommandArgs(pc, "cautem-box", true, []string{"ls", "-la"})
-	if n := len(got); got[n-3] != "-t" || got[n-2] != "cautem-box" || got[n-1] != "ls -la" {
+	got = SSHCommandArgs(pc, "quarshell-box", true, []string{"ls", "-la"})
+	if n := len(got); got[n-3] != "-t" || got[n-2] != "quarshell-box" || got[n-1] != "ls -la" {
 		t.Fatalf("tty command argv: %q", got)
 	}
-	got = SSHCommandArgs(pc, "cautem-box", false, []string{"echo", "a b"})
+	got = SSHCommandArgs(pc, "quarshell-box", false, []string{"echo", "a b"})
 	if n := len(got); got[n-3] != "-T" || got[n-1] != "echo 'a b'" {
 		t.Fatalf("non-tty command argv: %q", got)
 	}
@@ -116,12 +116,12 @@ func TestPosixQuoteRoundTrip(t *testing.T) {
 
 func TestEditorCommand(t *testing.T) {
 	cases := map[string][]string{
-		"cursor": {"cursor", "--remote", "ssh-remote+cautem-box", "/workspace"},
-		"vscode": {"code", "--remote", "ssh-remote+cautem-box", "/workspace"},
-		"code":   {"code", "--remote", "ssh-remote+cautem-box", "/workspace"},
+		"cursor": {"cursor", "--remote", "ssh-remote+quarshell-box", "/workspace"},
+		"vscode": {"code", "--remote", "ssh-remote+quarshell-box", "/workspace"},
+		"code":   {"code", "--remote", "ssh-remote+quarshell-box", "/workspace"},
 	}
 	for ed, want := range cases {
-		got, err := EditorCommand(ed, "cautem-box")
+		got, err := EditorCommand(ed, "quarshell-box")
 		if err != nil || !reflect.DeepEqual(got, want) {
 			t.Fatalf("EditorCommand(%q) = %q, %v; want %q", ed, got, err, want)
 		}
@@ -188,7 +188,7 @@ func TestProxyGatewayArgsAndHostBlock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.HasPrefix(block, "Host cautem-box\n") {
+	if !strings.HasPrefix(block, "Host quarshell-box\n") {
 		t.Fatalf("host block: %q", block)
 	}
 	if !strings.Contains(block, "ssh-proxy --gateway-name dev --name box") {

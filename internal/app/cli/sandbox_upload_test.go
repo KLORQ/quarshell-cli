@@ -10,8 +10,8 @@ import (
 func TestSandboxNoGitIgnoreFlagsAreScopedToUploads(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("OPENSHELL_GATEWAY", "")
-	t.Setenv("CAUTEM_GATEWAY_URL", "")
-	t.Setenv("CAUTEM_GATEWAY_TOKEN", "")
+	t.Setenv("QUARSHELL_GATEWAY_URL", "")
+	t.Setenv("QUARSHELL_GATEWAY_TOKEN", "")
 	if err := runSandbox(&service.App{}, []string{"create", "--no-git-ignore"}); err == nil || !strings.Contains(err.Error(), "requires --upload") {
 		t.Fatalf("create without --upload error=%v; want flag dependency", err)
 	}

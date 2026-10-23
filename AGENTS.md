@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains the `cautem` CLI, built-in policies, agent container
+This repository contains the `quarshell` CLI, built-in policies, agent container
 recipes, and end-to-end tooling. The gateway, runtime, driver, proxy, and core
 policy engine live in separate repositories.
 

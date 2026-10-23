@@ -49,13 +49,13 @@ func GetLast(gateway, workspace string) (string, error) {
 
 func path() (string, error) {
 	if configHome := os.Getenv("XDG_CONFIG_HOME"); configHome != "" {
-		return filepath.Join(configHome, "cautem", "last-sandbox.yaml"), nil
+		return filepath.Join(configHome, "quarshell", "last-sandbox.yaml"), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "cautem", "last-sandbox.yaml"), nil
+	return filepath.Join(home, ".config", "quarshell", "last-sandbox.yaml"), nil
 }
 
 func load(path string) (stateFile, error) {

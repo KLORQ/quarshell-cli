@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 #
-# Minimal BYOC image — run any Linux container as an cautem sandbox.
+# Minimal BYOC image — run any Linux container as an quarshell sandbox.
 # Image requirements: https://klorq.github.io/sandbox.dev/reference/images/
 
 FROM python:3.13-slim
@@ -20,5 +20,5 @@ COPY --chown=app:app app.py .
 EXPOSE 8080
 USER app
 
-# cautem replaces ENTRYPOINT/CMD with cautem-init; pass the start command after --.
+# quarshell replaces ENTRYPOINT/CMD with quarshell-init; pass the start command after --.
 CMD ["python", "app.py"]

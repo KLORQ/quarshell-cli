@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// InitOpts for `cautem init --agent …`.
+// InitOpts for `quarshell init --agent …`.
 type InitOpts struct {
 	Agent string
 	Dir   string
@@ -55,8 +55,8 @@ func (a *App) Init(opt InitOpts) error {
 		return err
 	}
 	fmt.Printf("init: wrote %s\n", dst)
-	fmt.Printf("next: cautem policy check %s\n", dst)
-	fmt.Printf("      cautem agent login %s\n", agent)
+	fmt.Printf("next: quarshell policy check %s\n", dst)
+	fmt.Printf("      quarshell agent login %s\n", agent)
 	return nil
 }
 

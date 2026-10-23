@@ -1,5 +1,5 @@
-# cautem bash completions
-_cautem() {
+# quarshell bash completions
+_quarshell() {
     local current_word="${COMP_WORDS[COMP_CWORD]}"
     local -a commands=(
         version sandbox sb cp exec provider profile policy pol gateway gw logs lg term status
@@ -22,4 +22,4 @@ _cautem() {
     fi
 }
 
-complete -F _cautem cautem
+complete -F _quarshell quarshell

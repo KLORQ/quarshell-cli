@@ -37,7 +37,7 @@ func TestLastSandboxFileIsOwnerOnlyAndAtomic(t *testing.T) {
 	if err := SetLast("gw", "default", "demo"); err != nil {
 		t.Fatal(err)
 	}
-	info, err := os.Stat(filepath.Join(configHome, "cautem", "last-sandbox.yaml"))
+	info, err := os.Stat(filepath.Join(configHome, "quarshell", "last-sandbox.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}

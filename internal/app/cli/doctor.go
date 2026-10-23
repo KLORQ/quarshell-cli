@@ -13,9 +13,9 @@ func runDoctor(a *service.App, args []string) error {
 	}
 	if args[0] == "check" {
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem doctor check")
+			return fmt.Errorf("usage: quarshell doctor check")
 		}
 		return a.Doctor()
 	}
-	return fmt.Errorf("usage: cautem doctor check")
+	return fmt.Errorf("usage: quarshell doctor check")
 }

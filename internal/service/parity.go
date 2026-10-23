@@ -291,7 +291,7 @@ func localParityDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(home, ".config", "cautem", "parity")
+	dir := filepath.Join(home, ".config", "quarshell", "parity")
 	return dir, os.MkdirAll(dir, 0o755)
 }
 

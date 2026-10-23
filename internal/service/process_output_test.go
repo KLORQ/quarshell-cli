@@ -42,7 +42,7 @@ func TestWriteExecResultWritesCapturedStreams(t *testing.T) {
 	if string(out) != "out" {
 		t.Fatalf("stdout = %q", out)
 	}
-	if string(warning) != "errcautem: command output was truncated by the compute driver\n" {
+	if string(warning) != "errquarshell: command output was truncated by the compute driver\n" {
 		t.Fatalf("stderr = %q", warning)
 	}
 }

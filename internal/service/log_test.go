@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/KLORQ/quarshell-cli/internal/logger"
-	"github.com/KLORQ/quarshell-slogx"
+	"github.com/KLORQ/quarshell-core/slogx"
 )
 
 func TestOpLogger_includesOpAttr(t *testing.T) {

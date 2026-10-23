@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
 # SPDX-License-Identifier: Apache-2.0
 name: images-proxy
 
@@ -18,7 +18,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/cautem/cautem/sandboxes/proxy
+  IMAGE: ghcr.io/quarshell/quarshell/sandboxes/proxy
 
 jobs:
   build:
@@ -76,8 +76,8 @@ jobs:
         run: |
           set -euo pipefail
           case "$ARCH" in
-            amd64) asset="cautem_Linux_x86_64.tar.gz" ;;
-            arm64) asset="cautem_Linux_arm64.tar.gz" ;;
+            amd64) asset="quarshell_Linux_x86_64.tar.gz" ;;
+            arm64) asset="quarshell_Linux_arm64.tar.gz" ;;
             *) echo "unsupported architecture: $ARCH" >&2; exit 1 ;;
           esac
           asset_ready=0
@@ -95,9 +95,9 @@ jobs:
           fi
           gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir dist
           mkdir -p image-context
-          tar -xzf "dist/$asset" -C image-context cautem
+          tar -xzf "dist/$asset" -C image-context quarshell
           cp policies/default.yaml image-context/default.yaml
-          chmod 0555 image-context/cautem
+          chmod 0555 image-context/quarshell
 
       - name: Build and push architecture image
         uses: docker/build-push-action@v6
@@ -110,7 +110,7 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.version=${{ steps.release-tag.outputs.value }}
-            org.opencontainers.image.description=Cautem sandbox proxy companion
+            org.opencontainers.image.description=Quarshell sandbox proxy companion
 
   manifest:
     name: Publish multi-architecture manifest

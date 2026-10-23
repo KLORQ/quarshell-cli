@@ -18,7 +18,7 @@ func (a *App) GatewayAdd(name, url string) error {
 func (a *App) GatewayAddParsed(parsed osargs.GatewayAdd) error {
 	name, url := parsed.Name, parsed.Endpoint
 	if name == "" || url == "" {
-		return fmt.Errorf("usage: cautem gateway add <endpoint> [--name NAME] [--local] [--oidc-issuer URL]")
+		return fmt.Errorf("usage: quarshell gateway add <endpoint> [--name NAME] [--local] [--oidc-issuer URL]")
 	}
 	cfg, path, err := gwconfig.Load()
 	if err != nil {
@@ -53,7 +53,7 @@ func (a *App) GatewayAddParsed(parsed osargs.GatewayAdd) error {
 	fmt.Printf("gateway add: ok name=%s url=%s config=%s\n", name, url, path)
 	if g.OIDCIssuer != "" {
 		fmt.Printf("gateway add: oidc issuer=%s client_id=%s\n", g.OIDCIssuer, g.OIDCClientID)
-		fmt.Printf("gateway add: run `cautem gateway login` for Authorization Code + PKCE\n")
+		fmt.Printf("gateway add: run `quarshell gateway login` for Authorization Code + PKCE\n")
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (a *App) GatewayListRemote() error {
 	}
 	u := gwconfig.CurrentURL(cfg)
 	if u == "" {
-		return fmt.Errorf("gateway list: no current gateway (cautem gateway add …)")
+		return fmt.Errorf("gateway list: no current gateway (quarshell gateway add …)")
 	}
 	ctx, cancel := a.withTimeout(TimeoutAPI)
 	defer cancel()
@@ -134,4 +134,4 @@ func (a *App) GatewayListRemote() error {
 	return nil
 }
 
-// ExecOpts for cautem sandbox exec.
+// ExecOpts for quarshell sandbox exec.

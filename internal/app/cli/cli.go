@@ -44,7 +44,7 @@ func execute(a *service.App, args []string) error {
 	if len(args) == 0 {
 		fmt.Println(a.Banner())
 		fmt.Println("commands: sandbox|cp|exec|provider|profile|policy|gateway|logs|term|status|init|doctor|whoami|workspace|forward|service|settings|…")
-		fmt.Println("run 'cautem --help' for full usage")
+		fmt.Println("run 'quarshell --help' for full usage")
 		return nil
 	}
 	log := logger.FromContext(a.CommandContext()).With(slog.String("op", "cli.execute"), slog.String("cmd", args[0]))
@@ -52,7 +52,7 @@ func execute(a *service.App, args []string) error {
 	switch args[0] {
 	case "version":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem version")
+			return fmt.Errorf("usage: quarshell version")
 		}
 		fmt.Println(a.Version())
 		return nil
@@ -60,7 +60,7 @@ func execute(a *service.App, args []string) error {
 		return runInit(a, args[1:])
 	case "status":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem status")
+			return fmt.Errorf("usage: quarshell status")
 		}
 		return a.Status()
 	case "doctor", "dr":
@@ -73,7 +73,7 @@ func execute(a *service.App, args []string) error {
 		return runExec(a, args[1:])
 	case "cp":
 		if len(args) != 3 {
-			return fmt.Errorf("usage: cautem cp <local-path> <sandbox>:/path OR cautem cp <sandbox>:/path <local-path>")
+			return fmt.Errorf("usage: quarshell cp <local-path> <sandbox>:/path OR quarshell cp <sandbox>:/path <local-path>")
 		}
 		return a.Copy(args[1], args[2])
 	case "term":
@@ -88,7 +88,7 @@ func execute(a *service.App, args []string) error {
 		return runProvider(a, append([]string{"profile"}, args[1:]...))
 	case "whoami":
 		if len(args) != 1 {
-			return fmt.Errorf("usage: cautem whoami")
+			return fmt.Errorf("usage: quarshell whoami")
 		}
 		return a.Whoami()
 	case "workspace", "ws":
@@ -106,7 +106,7 @@ func execute(a *service.App, args []string) error {
 	case "ssh-proxy":
 		return runSSHProxy(a, args[1:])
 	case "proxy":
-		// Internal: Docker sidecar entrypoint (`/cautem/cautem proxy --listen … --policy …`).
+		// Internal: Docker sidecar entrypoint (`/quarshell/quarshell proxy --listen … --policy …`).
 		return runProxy(a, args[1:])
 	case "install":
 		return runInstall(a, args[1:])
@@ -117,7 +117,7 @@ func execute(a *service.App, args []string) error {
 
 func runCompletions(args []string) error {
 	if len(args) != 1 {
-		return fmt.Errorf("usage: cautem completions <bash|zsh|fish|powershell>")
+		return fmt.Errorf("usage: quarshell completions <bash|zsh|fish|powershell>")
 	}
 	shell := strings.ToLower(args[0])
 	switch shell {
@@ -141,24 +141,24 @@ func runInit(a *service.App, args []string) error {
 		switch args[i] {
 		case "--agent":
 			if i+1 >= len(args) {
-				return fmt.Errorf("usage: cautem init --agent cursor [--dir DIR] [--force]")
+				return fmt.Errorf("usage: quarshell init --agent cursor [--dir DIR] [--force]")
 			}
 			i++
 			opt.Agent = args[i]
 		case "--dir":
 			if i+1 >= len(args) {
-				return fmt.Errorf("usage: cautem init --agent cursor [--dir DIR] [--force]")
+				return fmt.Errorf("usage: quarshell init --agent cursor [--dir DIR] [--force]")
 			}
 			i++
 			opt.Dir = args[i]
 		case "--force", "-f":
 			opt.Force = true
 		default:
-			return fmt.Errorf("usage: cautem init --agent cursor [--dir DIR] [--force]")
+			return fmt.Errorf("usage: quarshell init --agent cursor [--dir DIR] [--force]")
 		}
 	}
 	if strings.TrimSpace(opt.Agent) == "" {
-		return fmt.Errorf("usage: cautem init --agent cursor [--dir DIR] [--force]")
+		return fmt.Errorf("usage: quarshell init --agent cursor [--dir DIR] [--force]")
 	}
 	return a.Init(opt)
 }
@@ -172,7 +172,7 @@ func runTerm(a *service.App, args []string) error {
 	for i := 0; i < len(args); i++ {
 		flag, value, hasValue := strings.Cut(args[i], "=")
 		if flag != "--theme" || seenTheme {
-			return fmt.Errorf("usage: cautem term [--theme auto|dark|light]")
+			return fmt.Errorf("usage: quarshell term [--theme auto|dark|light]")
 		}
 		seenTheme = true
 		if !hasValue {
@@ -188,7 +188,7 @@ func runTerm(a *service.App, args []string) error {
 		return fmt.Errorf("invalid theme %q (auto|dark|light)", theme)
 	}
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
-		return fmt.Errorf("cautem term: requires an interactive terminal")
+		return fmt.Errorf("quarshell term: requires an interactive terminal")
 	}
 	control, closeControl, err := newTUIControl(a)
 	if err != nil {

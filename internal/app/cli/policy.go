@@ -9,19 +9,19 @@ import (
 
 	"github.com/KLORQ/quarshell-cli/internal/osargs"
 	"github.com/KLORQ/quarshell-cli/internal/service"
-	corepolicy "github.com/KLORQ/quarshell-core/policy"
+	corepolicy "github.com/KLORQ/quarshell-policy/corepolicy"
 	gatewayv1 "github.com/KLORQ/quarshell-proto/gen/go/openshell/gateway/v1"
 	sandboxv1 "github.com/KLORQ/quarshell-proto/gen/go/openshell/sandbox/v1"
 )
 
 func runPolicy(a *service.App, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: cautem policy get|set|update|list|history|delete|check …")
+		return fmt.Errorf("usage: quarshell policy get|set|update|list|history|delete|check …")
 	}
 	switch args[0] {
-	case "check": // cautem-only validation helper
+	case "check": // quarshell-only validation helper
 		if len(args) > 2 {
-			return fmt.Errorf("usage: cautem policy check [path]")
+			return fmt.Errorf("usage: quarshell policy check [path]")
 		}
 		path := "policies/default.yaml"
 		if len(args) > 1 {
@@ -101,7 +101,7 @@ func runPolicy(a *service.App, args []string) error {
 					return fmt.Errorf("unknown flag %q", args[i])
 				}
 				if name != "" {
-					return fmt.Errorf("usage: cautem policy list [sandbox|--global]")
+					return fmt.Errorf("usage: quarshell policy list [sandbox|--global]")
 				}
 				name = args[i]
 			}
@@ -117,7 +117,7 @@ func runPolicy(a *service.App, args []string) error {
 			return a.PolicyGlobalGet()
 		}
 		if name == "" {
-			return fmt.Errorf("usage: cautem policy list <sandbox> [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
+			return fmt.Errorf("usage: quarshell policy list <sandbox> [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
 		}
 		return a.PolicyListPage(name, pageSize, pageToken, output)
 	case "delete", "rm":
@@ -132,7 +132,7 @@ func runPolicy(a *service.App, args []string) error {
 			global = true
 		}
 		if !global {
-			return fmt.Errorf("usage: cautem policy delete --global")
+			return fmt.Errorf("usage: quarshell policy delete --global")
 		}
 		fmt.Println("policy delete --global: clearing gateway global policy")
 		return a.PolicyGlobalClear()
@@ -192,7 +192,7 @@ func runPolicyHistory(a *service.App, args []string) error {
 			return fmt.Errorf("policy history: unknown flag %q", arg)
 		}
 		if sandbox != "" {
-			return fmt.Errorf("usage: cautem policy history [SANDBOX|--global] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
+			return fmt.Errorf("usage: quarshell policy history [SANDBOX|--global] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
 		}
 		sandbox = arg
 	}
@@ -200,14 +200,14 @@ func runPolicyHistory(a *service.App, args []string) error {
 		return fmt.Errorf("policy history: --global cannot be combined with a sandbox name")
 	}
 	if !global && sandbox == "" {
-		return fmt.Errorf("usage: cautem policy history [SANDBOX|--global] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
+		return fmt.Errorf("usage: quarshell policy history [SANDBOX|--global] [--page-size N] [--page-token TOKEN] [-o table|yaml|json]")
 	}
 	return a.PolicyHistoryPage(sandbox, global, pageSize, pageToken, output)
 }
 
 func runPolicyUpdate(a *service.App, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: cautem policy update <sandbox> --add-endpoint SPEC [--add-allow SPEC] [--add-deny SPEC] [--binary PATH] [--wait]")
+		return fmt.Errorf("usage: quarshell policy update <sandbox> --add-endpoint SPEC [--add-allow SPEC] [--add-deny SPEC] [--binary PATH] [--wait]")
 	}
 	name := args[0]
 	wait := false
