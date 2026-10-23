@@ -1,0 +1,25 @@
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  read_only: [/usr, /lib, /proc, /dev/urandom, /etc, /app]
+  read_write: [/tmp, /dev/null]
+
+landlock:
+  compatibility: best_effort
+
+network_policies: {}
+
+inference:
+  providers: [anthropic, openai]
+  # Optional custom profile (Providers v2):
+  # profiles:
+  #   - id: my-vllm
+  #     host: host.quarshell.internal
+  #     port: 8000
+  #     env_keys: [OPENAI_API_KEY]
+  #     refresh: env
+
+credentials:
+  env_allow: [TERM, LANG, ANTHROPIC_API_KEY, OPENAI_API_KEY]
+  write_to_disk: false

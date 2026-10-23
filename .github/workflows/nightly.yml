@@ -1,0 +1,208 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Manual nightly multi-arch binaries → GitHub Release tag `nightly`.
+# Kept manual so the Releases page stays focused on the latest tested beta.
+name: Nightly
+
+env:
+  CGO_ENABLED: "0"
+  GOWORK: ${{ github.workspace }}/go.work
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    name: Build & publish nightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+          fetch-depth: 0
+
+      - name: Checkout quarshell-core workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+      - name: Checkout quarshell-driver workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+      - name: Checkout quarshell-proto workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+      - name: Checkout quarshell-policy workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+      - name: Checkout quarshell-proxy workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+      - name: Checkout quarshell-runtime workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+      - name: Checkout quarshell-sdk workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > "${{ github.workspace }}/go.work"
+          echo "Wrote go.work:" && cat "${{ github.workspace }}/go.work"
+
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-cli/go.sum
+            quarshell-core/go.sum
+            quarshell-runtime/go.sum
+            quarshell-gateway/go.sum
+            quarshell-proto/go.sum
+
+      - name: Cross-compile release matrix
+        working-directory: quarshell-cli
+        run: |
+          set -euo pipefail
+          ver="0.0.0-nightly.$(date -u +%Y%m%d)+$(git rev-parse --short HEAD)"
+          echo "NIGHTLY_VERSION=${ver}" >> "$GITHUB_ENV"
+          out="${{ github.workspace }}/dist"
+          mkdir -p "$out"
+
+          archive_os() {
+            case "$1" in
+              linux) echo Linux ;;
+              darwin) echo Darwin ;;
+              windows) echo Windows ;;
+            esac
+          }
+          archive_arch() {
+            case "$1" in
+              amd64) echo x86_64 ;;
+              *) echo "$1" ;;
+            esac
+          }
+
+          helpers="${{ github.workspace }}/helpers"
+          bash scripts/build-linux-helpers.sh "$ver" "$helpers" amd64 arm64
+
+          # Same layout as GoReleaser: quarshell + libexec/quarshell/linux-<arch>/.
+          build_cli() {
+            local goos="$1" goarch="$2" ext="${3:-}"
+            local name="quarshell_$(archive_os "$goos")_$(archive_arch "$goarch")"
+            local stage="${out}/stage-${name}"
+            echo "→ ${name}"
+            mkdir -p "${stage}/libexec/quarshell"
+            GOOS="$goos" GOARCH="$goarch" go build -trimpath \
+              -ldflags="-s -w -X github.com/KLORQ/quarshell-cli/internal/service.BuildVersion=${ver}" \
+              -o "${stage}/quarshell${ext}" ./cmd/quarshell
+            cp -R "${helpers}/linux-${goarch}" "${stage}/libexec/quarshell/"
+            if [[ "$goos" != "windows" && -d ../quarshell-gateway ]]; then
+              GOOS="$goos" GOARCH="$goarch" go build -C ../quarshell-gateway -trimpath -ldflags="-s -w" \
+                -o "${stage}/quarshell-gateway" ./cmd/quarshell-gateway
+            fi
+            cp install.sh "${stage}/"
+            if [[ "$goos" == "windows" ]]; then
+              (cd "$stage" && zip -qr "${out}/${name}.zip" .)
+            else
+              tar -czf "${out}/${name}.tar.gz" -C "$stage" .
+            fi
+            rm -rf "$stage"
+          }
+
+          build_cli linux amd64
+          build_cli linux arm64
+          build_cli darwin amd64
+          build_cli darwin arm64
+          build_cli windows amd64 .exe
+
+          if [[ -d ../quarshell-gateway ]]; then
+            for goos in linux darwin; do
+              for goarch in amd64 arm64; do
+                name="quarshell-gateway_$(archive_os "$goos")_$(archive_arch "$goarch")"
+                echo "→ ${name}"
+                GOOS="$goos" GOARCH="$goarch" go build -C ../quarshell-gateway -trimpath -ldflags="-s -w" \
+                  -o "${out}/quarshell-gateway" ./cmd/quarshell-gateway
+                (cd "$out" && tar -czf "${name}.tar.gz" quarshell-gateway && rm -f quarshell-gateway)
+              done
+            done
+          fi
+
+          (cd "$out" && sha256sum -- *.tar.gz *.zip | tee checksums.txt)
+          cp install.sh "$out/"
+          printf '%s\n' "$ver" > "$out/VERSION"
+
+      - name: Publish GitHub Release (nightly / prerelease)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: "Nightly ${{ env.NIGHTLY_VERSION }}"
+          prerelease: true
+          make_latest: false
+          generate_release_notes: true
+          body: |
+            Automated nightly build from `main` (workspace modules).
+
+            **Not a stable release.** Prefer the latest tested beta for installations.
+
+            ### Install
+            ```bash
+            curl -LsSf https://raw.githubusercontent.com/KLORQ/quarshell-cli/main/install.sh | QUARSHELL_VERSION=nightly sh
+            ```
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

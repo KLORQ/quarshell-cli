@@ -1,0 +1,260 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 lkmavi
+# SPDX-License-Identifier: Apache-2.0
+#
+# Cursor Agent + GitHub push/create-repo base policy.
+# Replace YOUR_ORG with your GitHub org/user (sed -i '' 's/YOUR_ORG/quarshell/g' …).
+#
+#   quarshell sandbox create --name cursor --from cursor \
+#     --policy quarshell-cli/policies/cursor-github-push.yaml \
+#     --provider cursor --provider gh
+
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only:
+  - /usr
+  - /lib
+  - /proc
+  - /dev/urandom
+  - /app
+  - /etc
+  - /var/log
+  - /tmp
+  - /AGENTS.md
+  read_write:
+  - /tmp
+  - /dev/null
+  - /workspace
+  - /quarshell/data
+  - /sandbox
+landlock:
+  compatibility: best_effort
+network_policies:
+  cursor-sh:
+    name: cursor-sh
+    endpoints:
+    - host: '**.cursor.sh'
+      port: 443
+  cursor-com:
+    name: cursor-com
+    endpoints:
+    - host: '**.cursor.com'
+      port: 443
+  cursor-com-apex:
+    name: cursor-com-apex
+    endpoints:
+    - host: cursor.com
+      port: 443
+  cursor-downloads:
+    name: cursor-downloads
+    endpoints:
+    - host: downloads.cursor.com
+      port: 443
+  cursor-blob:
+    name: cursor-blob
+    endpoints:
+    - host: cursor.blob.core.windows.net
+      port: 443
+  cursor-ms-cdn:
+    name: cursor-ms-cdn
+    endpoints:
+    - host: cursor.download.prss.microsoft.com
+      port: 443
+  github:
+    name: github
+    endpoints:
+    - host: github.com
+      port: 443
+  github-api:
+    name: github-api
+    endpoints:
+    - host: api.github.com
+      port: 443
+  ghcr:
+    name: ghcr
+    endpoints:
+    - host: ghcr.io
+      port: 443
+  github-release-assets:
+    name: github-release-assets
+    endpoints:
+    - host: release-assets.githubusercontent.com
+      port: 443
+  github-objects:
+    name: github-objects
+    endpoints:
+    - host: objects.githubusercontent.com
+      port: 443
+  github-usercontent:
+    name: github-usercontent
+    endpoints:
+    - host: '**.githubusercontent.com'
+      port: 443
+  go-dev:
+    name: go-dev
+    endpoints:
+    - host: go.dev
+      port: 443
+  go-dl:
+    name: go-dl
+    endpoints:
+    - host: dl.google.com
+      port: 443
+  go-proxy:
+    name: go-proxy
+    endpoints:
+    - host: proxy.golang.org
+      port: 443
+  go-sum:
+    name: go-sum
+    endpoints:
+    - host: sum.golang.org
+      port: 443
+  goproxy-io:
+    name: goproxy-io
+    endpoints:
+    - host: goproxy.io
+      port: 443
+  storage-googleapis:
+    name: storage-googleapis
+    endpoints:
+    - host: storage.googleapis.com
+      port: 443
+  debian-deb:
+    name: debian-deb
+    endpoints:
+    - host: deb.debian.org
+      ports:
+      - 80
+      - 443
+  debian-security:
+    name: debian-security
+    endpoints:
+    - host: security.debian.org
+      ports:
+      - 80
+      - 443
+  debian-cdn:
+    name: debian-cdn
+    endpoints:
+    - host: cdn-fastly.deb.debian.org
+      ports:
+      - 80
+      - 443
+  github-git-org:
+    name: github-git-org
+    endpoints:
+    - host: github.com
+      port: 443
+      protocol: rest
+      tls: terminate
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+      rules:
+      - allow:
+          method: GET
+          path: /YOUR_ORG/**
+      - allow:
+          method: HEAD
+          path: /YOUR_ORG/**
+      - allow:
+          method: OPTIONS
+          path: /YOUR_ORG/**
+      - allow:
+          method: POST
+          path: /YOUR_ORG/**/git-upload-pack
+      - allow:
+          method: POST
+          path: /YOUR_ORG/**/git-receive-pack
+    binaries:
+    - path: /usr/bin/git
+    - path: /usr/local/bin/git
+  github-api-org:
+    name: github-api-org
+    endpoints:
+    - host: api.github.com
+      port: 443
+      protocol: rest
+      tls: terminate
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+      rules:
+      - allow:
+          method: GET
+          path: /repos/YOUR_ORG/**
+      - allow:
+          method: HEAD
+          path: /repos/YOUR_ORG/**
+      - allow:
+          method: POST
+          path: /repos/YOUR_ORG/**
+      - allow:
+          method: PUT
+          path: /repos/YOUR_ORG/**
+      - allow:
+          method: PATCH
+          path: /repos/YOUR_ORG/**
+      - allow:
+          method: POST
+          path: /orgs/YOUR_ORG/repos
+      - allow:
+          method: GET
+          path: /orgs/YOUR_ORG
+      - allow:
+          method: GET
+          path: /orgs/YOUR_ORG/**
+      - allow:
+          method: POST
+          path: /user/repos
+      - allow:
+          method: GET
+          path: /user
+      - allow:
+          method: GET
+          path: /user/**
+    binaries:
+    - path: /usr/bin/gh
+    - path: /usr/local/bin/gh
+    - path: /usr/bin/curl
+    - path: /usr/local/bin/curl
+    - path: /usr/bin/git
+    - path: /usr/local/bin/git
+  github-graphql-rw:
+    name: github-graphql-rw
+    endpoints:
+    - host: api.github.com
+      port: 443
+      path: /graphql
+      protocol: graphql
+      tls: terminate
+      access: read-write
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+    binaries:
+    - path: /usr/bin/gh
+    - path: /usr/local/bin/gh
+inference:
+  providers:
+  - anthropic
+  - openai
+display:
+  mode: none
+  publish: 127.0.0.1
+  port: 6080
+  auth: password
+  browser: chromium
+credentials:
+  env_allow:
+  - GITHUB_TOKEN
+  - GH_TOKEN
+  - TERM
+  - LANG
+  - COLORTERM
+  - DISPLAY
+  write_to_disk: false

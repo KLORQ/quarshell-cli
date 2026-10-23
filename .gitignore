@@ -1,0 +1,14 @@
+*.exe
+*.test
+*.out
+/osg
+/quarshell-init
+/quarshell-gateway
+/osg-linux-*
+/osg-darwin-*
+/osg-windows-*
+.DS_Store
+/quarshell-gateway-*
+/quarshell-cli/
+/build/
+/dist/

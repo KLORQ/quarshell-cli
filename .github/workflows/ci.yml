@@ -1,0 +1,647 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 the quarshell authors
+# SPDX-License-Identifier: Apache-2.0
+#
+name: CI
+
+env:
+  CGO_ENABLED: "0"
+  GOWORK: ${{ github.workspace }}/go.work
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write  # Codecov OIDC
+
+jobs:
+  formatting:
+    name: Formatting
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quarshell-cli
+    steps:
+
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+
+      - name: Checkout quarshell-core
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+
+      - name: Checkout quarshell-driver
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+
+      - name: Checkout quarshell-policy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - name: Checkout quarshell-proxy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+
+      - name: Checkout quarshell-proto
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > "${{ github.workspace }}/go.work"
+          echo "Wrote go.work:" && cat "${{ github.workspace }}/go.work"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+      - name: Check gofmt
+        run: |
+          set -euo pipefail
+          bad="$(gofmt -l .)"
+          if [[ -n "$bad" ]]; then
+            echo "ERROR: not formatted:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "gofmt: ok"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quarshell-cli
+    steps:
+
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+
+      - name: Checkout quarshell-core
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+
+      - name: Checkout quarshell-driver
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+
+      - name: Checkout quarshell-policy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - name: Checkout quarshell-proxy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+
+      - name: Checkout quarshell-proto
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > "${{ github.workspace }}/go.work"
+          echo "Wrote go.work:" && cat "${{ github.workspace }}/go.work"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.14.0
+          working-directory: quarshell-cli
+          args: --timeout=5m
+
+  build:
+    name: Build - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: quarshell-cli
+    steps:
+
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+
+      - name: Checkout quarshell-core
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+
+      - name: Checkout quarshell-driver
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+
+      - name: Checkout quarshell-policy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - name: Checkout quarshell-proxy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+
+      - name: Checkout quarshell-proto
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > "${{ github.workspace }}/go.work"
+          echo "Wrote go.work:" && cat "${{ github.workspace }}/go.work"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+      - name: Download modules
+        run: go mod download
+      - name: Build
+        run: go build ./...
+
+      - name: Build and smoke proxy companion image
+        if: runner.os == 'Linux'
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage="$(mktemp -d)"
+          trap 'rm -rf "$stage"' EXIT
+          GOWORK="${{ github.workspace }}/go.work" CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+            go build -C quarshell-cli -o "$stage/quarshell" ./cmd/quarshell
+          cp quarshell-cli/policies/default.yaml "$stage/default.yaml"
+          docker build --platform linux/amd64 -t quarshell-proxy:ci \
+            -f quarshell-cli/docker/proxy/Dockerfile "$stage"
+          docker run --platform linux/amd64 --rm --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,size=16m \
+            --entrypoint /usr/local/bin/quarshell quarshell-proxy:ci proxy --help >/dev/null
+
+  test:
+    name: Test - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: quarshell-cli
+    steps:
+
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+
+      - name: Checkout quarshell-core
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+
+      - name: Checkout quarshell-driver
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+
+      - name: Checkout quarshell-policy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - name: Checkout quarshell-proxy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+
+      - name: Checkout quarshell-proto
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > "${{ github.workspace }}/go.work"
+          echo "Wrote go.work:" && cat "${{ github.workspace }}/go.work"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+      - name: Download modules
+        run: go mod download
+      - name: Vet
+        if: matrix.os == 'ubuntu-latest'
+        run: go vet ./...
+      - name: Test (race + coverage)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race -count=1 -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Test (race)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        env:
+          CGO_ENABLED: "1"
+        run: go test -race -count=1 ./...
+      - name: Test
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: go test -count=1 ./...
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./quarshell-cli/coverage.txt
+          flags: unittests
+          name: codecov-quarshell-cli
+          fail_ci_if_error: false
+
+  release-dry-run:
+    name: Release archives + install.sh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout quarshell-cli
+        uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+          fetch-depth: 0
+
+      - name: Checkout quarshell-driver candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.2.4
+          path: quarshell-driver
+
+      - name: Checkout quarshell-gateway candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-gateway
+          ref: v0.1.7
+          path: quarshell-gateway
+
+      - name: Checkout quarshell-runtime candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.5
+          path: quarshell-runtime
+
+      - name: Checkout quarshell-sdk candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.5
+          path: quarshell-sdk
+
+      - name: Checkout quarshell-core candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.5.2
+          path: quarshell-core
+
+      - name: Checkout quarshell-policy candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-policy
+          ref: v0.2.2
+          path: quarshell-policy
+
+      - name: Checkout quarshell-proxy candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.5
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-proto candidate
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.6
+          path: quarshell-proto
+
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("$d")
+            done
+            for d in "${modules[@]}"; do
+              echo "  ./$d"
+            done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+            echo ')'
+          } > go.work
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+
+      - name: GoReleaser snapshot
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: v2.18.3
+          workdir: quarshell-cli
+          args: release --snapshot --clean --skip=publish
+        env:
+          GOTOOLCHAIN: local
+
+      - name: Install Syft
+        id: syft
+        uses: anchore/sbom-action/download-syft@v0.24.0
+        with:
+          syft-version: v1.42.3
+
+      - name: Generate and validate SPDX SBOMs for release archives
+        working-directory: quarshell-cli
+        env:
+          SYFT_BIN: ${{ steps.syft.outputs.cmd }}
+        run: bash scripts/generate-release-sboms.sh "$SYFT_BIN" dist
+
+      - name: Verify archive layout and install.sh
+        working-directory: quarshell-cli
+        shell: bash
+        run: |
+          set -euo pipefail
+          for a in dist/quarshell_Linux_x86_64.tar.gz dist/quarshell_Darwin_arm64.tar.gz; do
+            arch=amd64; [[ "$a" == *arm64* ]] && arch=arm64
+            list="$(tar -tzf "$a")"
+            for f in quarshell quarshell-gateway \
+                     "libexec/quarshell/linux-${arch}/quarshell" \
+                     "libexec/quarshell/linux-${arch}/quarshell-init" \
+                     "libexec/quarshell/linux-${arch}/quarshell-sshd"; do
+              grep -qx "\(\./\)\?${f}" <<<"$list" || { echo "missing ${f} in ${a}"; echo "$list"; exit 1; }
+            done
+            for f in providers/claude-code.yaml providers/cursor.yaml providers/github.yaml providers/nvidia.yaml; do
+              grep -qx "\(\./\)\?${f}" <<<"$list" || { echo "missing ${f} in ${a}"; echo "$list"; exit 1; }
+            done
+          done
+          gateway_list="$(tar -tzf dist/quarshell-gateway_Linux_x86_64.tar.gz)"
+          grep -qx "\(\./\)\?providers/claude-code.yaml" <<<"$gateway_list" || { echo "missing built-in profiles in standalone gateway archive"; echo "$gateway_list"; exit 1; }
+          unzip -l dist/quarshell_Windows_x86_64.zip | grep -q "libexec/quarshell/linux-amd64/quarshell-sshd"
+          unzip -l dist/quarshell_Windows_x86_64.zip | grep -q "providers/claude-code.yaml"
+
+          mkdir -p /tmp/rel && ln -s "$PWD/dist" /tmp/rel/snapshot
+          QUARSHELL_RELEASE_URL=file:///tmp/rel QUARSHELL_VERSION=snapshot \
+            QUARSHELL_NO_START=1 QUARSHELL_INSTALL_DIR=/tmp/prefix/bin sh ./install.sh
+          test -x /tmp/prefix/bin/quarshell
+          test -x /tmp/prefix/bin/quarshell-gateway
+          test -f /tmp/prefix/bin/providers/claude-code.yaml
+          test -x /tmp/prefix/libexec/quarshell/linux-amd64/quarshell-sshd
+          /tmp/prefix/bin/quarshell provider profile show claude-code | grep -q '^id: claude-code$'
+          /tmp/prefix/bin/quarshell version
