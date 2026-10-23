@@ -1,0 +1,139 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 cautem
+# SPDX-License-Identifier: Apache-2.0
+#
+# OpenShell-style GitHub write base policy for org cautem.
+# Builtin github *provider*: API read-only + git-upload-pack only.
+# This file is the sandbox *base* widen (create repo + push) — same loop as
+# OpenShell: default deny → DENIED in logs → policy set → retry.
+#
+#   cautem sandbox create --name push --policy quarshell-cli/policies/github-push-cautem.yaml \
+#     --gateway … --provider gh
+#   # or on a running sandbox:
+#   cautem policy set <sandbox> quarshell-cli/policies/github-push-cautem.yaml
+
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only:
+  - /usr
+  - /lib
+  - /proc
+  - /dev/urandom
+  - /app
+  - /etc
+  - /var/log
+  - /tmp
+  read_write:
+  - /tmp
+  - /dev/null
+  - /workspace
+  - /cautem/data
+landlock:
+  compatibility: best_effort
+network_policies:
+  github-api-cautem:
+    name: github-api-cautem
+    endpoints:
+    - host: api.github.com
+      port: 443
+      protocol: rest
+      tls: terminate
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+      rules:
+      - allow:
+          method: GET
+          path: /repos/cautem/**
+      - allow:
+          method: HEAD
+          path: /repos/cautem/**
+      - allow:
+          method: POST
+          path: /repos/cautem/**
+      - allow:
+          method: PUT
+          path: /repos/cautem/**
+      - allow:
+          method: PATCH
+          path: /repos/cautem/**
+      - allow:
+          method: DELETE
+          path: /repos/cautem/**
+      - allow:
+          method: POST
+          path: /orgs/cautem/repos
+      - allow:
+          method: GET
+          path: /orgs/cautem
+      - allow:
+          method: GET
+          path: /orgs/cautem/**
+      - allow:
+          method: POST
+          path: /user/repos
+      - allow:
+          method: GET
+          path: /user
+      - allow:
+          method: GET
+          path: /user/**
+    binaries:
+    - path: /usr/bin/gh
+    - path: /usr/local/bin/gh
+    - path: /usr/bin/curl
+    - path: /usr/local/bin/curl
+    - path: /usr/bin/git
+    - path: /usr/local/bin/git
+  github-graphql:
+    name: github-graphql
+    endpoints:
+    - host: api.github.com
+      port: 443
+      path: /graphql
+      protocol: graphql
+      tls: terminate
+      access: read-write
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+    binaries:
+    - path: /usr/bin/gh
+    - path: /usr/local/bin/gh
+  github-git-cautem:
+    name: github-git-cautem
+    endpoints:
+    - host: github.com
+      port: 443
+      protocol: rest
+      tls: terminate
+      enforcement: enforce
+      credential_keys:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+      rules:
+      - allow:
+          method: GET
+          path: /cautem/**
+      - allow:
+          method: HEAD
+          path: /cautem/**
+      - allow:
+          method: POST
+          path: /cautem/**/git-upload-pack
+      - allow:
+          method: POST
+          path: /cautem/**/git-receive-pack
+    binaries:
+    - path: /usr/bin/git
+    - path: /usr/local/bin/git
+credentials:
+  env_allow:
+  - TERM
+  - LANG
+  - COLORTERM
+  - GITHUB_TOKEN
+  - GH_TOKEN
+  write_to_disk: false

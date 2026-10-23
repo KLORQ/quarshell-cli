@@ -1,0 +1,83 @@
+version: "3"
+
+vars:
+  ORG: '{{.ORG | default .ROOT_DIR}}'
+
+tasks:
+  agent:cursor:
+    desc: Build cautem-sandbox:cursor (Cursor Agent CLI)
+    cmds:
+      - |
+        set -euo pipefail
+        ORG="{{.ORG}}"
+        if ! docker image inspect cautem-sandbox:local >/dev/null 2>&1; then
+          echo "building base cautem-sandbox:local …"
+          task -d "$ORG" runtime:image:cli
+        fi
+        docker build -t cautem-sandbox:cursor \
+          --build-arg BASE_IMAGE=cautem-sandbox:local \
+          -f "$ORG/quarshell-cli/docker/agents/cursor/Dockerfile" \
+          "$ORG/quarshell-cli/docker/agents/cursor"
+        echo "ok: cautem-sandbox:cursor"
+
+  agent:claude:
+    desc: Build cautem-sandbox:claude (Claude Code CLI)
+    cmds:
+      - |
+        set -euo pipefail
+        ORG="{{.ORG}}"
+        if ! docker image inspect cautem-sandbox:local >/dev/null 2>&1; then
+          task -d "$ORG" runtime:image:cli
+        fi
+        docker build -t cautem-sandbox:claude \
+          --build-arg BASE_IMAGE=cautem-sandbox:local \
+          -f "$ORG/quarshell-cli/docker/agents/claude/Dockerfile" \
+          "$ORG/quarshell-cli/docker/agents/claude"
+        echo "ok: cautem-sandbox:claude"
+
+  agent:codex:
+    desc: Build cautem-sandbox:codex (OpenAI Codex CLI)
+    cmds:
+      - |
+        set -euo pipefail
+        ORG="{{.ORG}}"
+        if ! docker image inspect cautem-sandbox:local >/dev/null 2>&1; then
+          task -d "$ORG" runtime:image:cli
+        fi
+        docker build -t cautem-sandbox:codex \
+          --build-arg BASE_IMAGE=cautem-sandbox:local \
+          -f "$ORG/quarshell-cli/docker/agents/codex/Dockerfile" \
+          "$ORG/quarshell-cli/docker/agents/codex"
+        echo "ok: cautem-sandbox:codex"
+
+  agent:all:
+    desc: Build cursor + claude + codex images
+    cmds:
+      - task: agent:cursor
+      - task: agent:claude
+      - task: agent:codex
+
+  proxy:
+    desc: Build the minimal Cautem proxy companion image
+    vars:
+      ARCH: '{{.ARCH | default ""}}'
+      IMAGE: '{{.IMAGE | default "quarshell-proxy:local"}}'
+    cmds:
+      - |
+        set -euo pipefail
+        ORG="{{.ORG}}"
+        ARCH="{{.ARCH}}"
+        if [[ -z "$ARCH" ]]; then
+          ARCH="$(go env GOARCH)"
+        fi
+        STAGE="$(mktemp -d)"
+        trap 'rm -rf "$STAGE"' EXIT
+        echo "build cautem for linux/$ARCH…"
+        GOWORK="$ORG/go.work" GOOS=linux GOARCH="$ARCH" CGO_ENABLED=0 \
+          go build -C "$ORG/quarshell-cli" -o "$STAGE/cautem" ./cmd/cautem
+        cp "$ORG/quarshell-cli/policies/default.yaml" "$STAGE/default.yaml"
+        docker build --platform "linux/$ARCH" -t "{{.IMAGE}}" \
+          -f "$ORG/quarshell-cli/docker/proxy/Dockerfile" "$STAGE"
+        docker run --platform "linux/$ARCH" --rm --read-only --tmpfs /tmp:rw,nosuid,nodev,size=16m \
+          --entrypoint /usr/local/bin/cautem "{{.IMAGE}}" proxy --help >/dev/null
+        echo "ok: {{.IMAGE}}"

@@ -1,0 +1,180 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 the cautem authors
+# SPDX-License-Identifier: Apache-2.0
+name: images-agents
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - "docker/agents/**"
+      - ".github/workflows/images-agents.yml"
+  pull_request:
+    paths:
+      - "docker/agents/**"
+      - ".github/workflows/images-agents.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/cautem/cautem/sandboxes
+  # Local tag only — GHCR base is private to quarshell-runtime; buildx container
+  # driver cannot pull it. Always build FROM a local docker-tagged base.
+  LOCAL_BASE: cautem-sandbox:base
+  GOWORK: ${{ github.workspace }}/go.work
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [cursor, claude, codex]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: quarshell-cli
+      - name: Checkout quarshell-runtime
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-runtime
+          ref: v0.1.0
+          path: quarshell-runtime
+      - name: Checkout quarshell-core
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-core
+          ref: v0.4.1
+          path: quarshell-core
+      - name: Checkout quarshell-driver
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver
+          ref: v0.1.0
+          path: quarshell-driver
+      - name: Checkout quarshell-proxy
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proxy
+          ref: v0.1.0
+          path: quarshell-proxy
+
+      - name: Checkout quarshell-slogx
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-slogx
+          ref: v0.1.5
+          path: quarshell-slogx
+      - name: Checkout quarshell-display workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-display
+          ref: v0.1.0
+          path: quarshell-display
+      - name: Checkout quarshell-proto workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-proto
+          ref: v0.2.2
+          path: quarshell-proto
+      - name: Checkout quarshell-providers workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-providers
+          ref: v0.1.0
+          path: quarshell-providers
+      - name: Checkout quarshell-sdk workspace dependency
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-sdk
+          ref: v0.1.0
+          path: quarshell-sdk
+      - name: Write go.work
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          workspace="$GITHUB_WORKSPACE"
+          {
+            echo 'go 1.27.0'
+            echo 'use ('
+            modules=()
+            for d in "$workspace"/quarshell-*; do
+              [[ -f "$d/go.mod" ]] && modules+=("${d##*/}")
+            done
+            for d in "${modules[@]}"; do echo "  ./$d"; done
+            echo ')'
+            echo 'replace ('
+            for d in "${modules[@]}"; do
+              module="$(sed -n 's/^module[[:space:]][[:space:]]*//p' "$workspace/$d/go.mod" | head -n 1)"
+              [[ -n "$module" ]] || continue
+              for source in "${modules[@]}"; do
+                awk -v module="$module" '$1 == module && $2 ~ /^v[0-9]/ { print $2 }; $1 == "require" && $2 == module && $3 ~ /^v[0-9]/ { print $3 }' "$workspace/$source/go.mod"
+              done | sort -u | while IFS= read -r version; do
+                printf '  %s %s => ./%s\n' "$module" "$version" "$d"
+              done
+            done
+          } > "$workspace/go.work"
+          echo "Wrote go.work:" && cat "$workspace/go.work"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.2"
+          cache: true
+          cache-dependency-path: |
+            quarshell-*/go.sum
+            quarshell-slogx/go.sum
+      # docker driver sees locally tagged images (container driver cannot).
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+      - name: Login GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build local base
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        env:
+          GOWORK: ${{ github.workspace }}/go.work
+        run: |
+          set -euo pipefail
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C quarshell-runtime -o images/sandbox/cautem-init ./cmd/cautem-init
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C quarshell-runtime -o images/sandbox/cautem-supervisor ./cmd/cautem-supervisor
+          if [[ -f quarshell-runtime/cmd/cautem-sshd/main.go ]]; then
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -C quarshell-runtime -o images/sandbox/cautem-sshd ./cmd/cautem-sshd
+          fi
+          docker build -t "${LOCAL_BASE}" --target cli \
+            --build-arg DEBIAN_BASE=mirror.gcr.io/library/debian:bookworm@sha256:2c037a04925515fdd6ea85ea14a682d0e79931f5e9f5d07b6dbfc6ba12f9e858 \
+            -f quarshell-runtime/images/sandbox/Dockerfile \
+            quarshell-runtime/images/sandbox
+          if [[ -x quarshell-runtime/images/sandbox/cautem-sshd ]]; then
+            docker run --rm --entrypoint /usr/local/bin/cautem-sshd "${LOCAL_BASE}" --help >/dev/null
+          fi
+      - name: Meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.agent }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=main,enable={{is_default_branch}}
+            type=sha
+            type=semver,pattern={{version}}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: quarshell-cli/docker/agents/${{ matrix.agent }}
+          file: quarshell-cli/docker/agents/${{ matrix.agent }}/Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=${{ env.LOCAL_BASE }}
