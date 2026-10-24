@@ -48,14 +48,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-gateway
-          ref: v0.1.9
+          ref: v0.1.11
           path: quarshell-gateway
 
       - name: Checkout quarshell-runtime helper source
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-policy profile catalog

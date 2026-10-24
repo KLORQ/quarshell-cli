@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
 
       - name: Checkout quarshell-policy
@@ -63,21 +63,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-sdk
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
 
       - name: Checkout quarshell-proto
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
 
       - name: Write go.work
@@ -151,7 +151,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
 
       - name: Checkout quarshell-policy
@@ -172,21 +172,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-sdk
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
 
       - name: Checkout quarshell-proto
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
 
       - name: Write go.work
@@ -260,7 +260,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
 
       - name: Checkout quarshell-policy
@@ -281,21 +281,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-sdk
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
 
       - name: Checkout quarshell-proto
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
 
       - name: Write go.work
@@ -384,7 +384,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
 
       - name: Checkout quarshell-policy
@@ -405,21 +405,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-sdk
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
 
       - name: Checkout quarshell-proto
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
 
       - name: Write go.work
@@ -503,28 +503,28 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
 
       - name: Checkout quarshell-gateway candidate
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-gateway
-          ref: v0.1.9
+          ref: v0.1.11
           path: quarshell-gateway
 
       - name: Checkout quarshell-runtime candidate
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
 
       - name: Checkout quarshell-sdk candidate
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
 
       - name: Checkout quarshell-core candidate
@@ -552,7 +552,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
 
       - name: Write go.work

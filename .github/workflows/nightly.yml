@@ -40,13 +40,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-driver
-          ref: v0.2.4
+          ref: v0.2.5
           path: quarshell-driver
       - name: Checkout quarshell-proto workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-proto
-          ref: v0.2.6
+          ref: v0.2.7
           path: quarshell-proto
       - name: Checkout quarshell-policy workspace dependency
         uses: actions/checkout@v4
@@ -64,13 +64,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-runtime
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-runtime
       - name: Checkout quarshell-sdk workspace dependency
         uses: actions/checkout@v4
         with:
           repository: KLORQ/quarshell-sdk
-          ref: v0.1.5
+          ref: v0.1.6
           path: quarshell-sdk
       - name: Write go.work
         working-directory: ${{ github.workspace }}
