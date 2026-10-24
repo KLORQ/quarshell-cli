@@ -7,7 +7,7 @@ name: Release
 
 env:
   CGO_ENABLED: "0"
-  GOWORK: "off"
+  GOWORK: ${{ github.workspace }}/go.work
 
 on:
   push:
@@ -51,6 +51,13 @@ jobs:
           ref: v0.1.11
           path: quarshell-gateway
 
+      - name: Checkout quarshell-driver-vm source
+        uses: actions/checkout@v4
+        with:
+          repository: KLORQ/quarshell-driver-vm
+          ref: v0.1.12
+          path: quarshell-driver-vm
+
       - name: Checkout quarshell-runtime helper source
         uses: actions/checkout@v4
         with:
@@ -64,6 +71,19 @@ jobs:
           repository: KLORQ/quarshell-policy
           ref: v0.2.2
           path: quarshell-policy
+
+      - name: Write Go workspace for checked out release sources
+        working-directory: ${{ github.workspace }}
+        run: |
+          cat > go.work <<'EOF'
+          go 1.27.0
+          use (
+            ./quarshell-cli
+            ./quarshell-gateway
+            ./quarshell-driver-vm
+          )
+          replace github.com/KLORQ/quarshell-driver-vm v0.1.11 => ./quarshell-driver-vm
+          EOF
 
       - uses: actions/setup-go@v5
         with:
